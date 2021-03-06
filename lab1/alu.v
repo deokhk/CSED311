@@ -13,13 +13,13 @@ module ALU #(parameter data_width = 16) (
 // Do not use delay in your implementation.
 
 // You can declare any variables as needed.
-wire add_sub_out;
+wire [data_width - 1: 0] add_sub_out;
 wire add_sub_flag;
-wire bitwise_out;
+wire [data_width - 1: 0] bitwise_out;
 wire bitwise_flag;
-wire shift_out;
+wire [data_width - 1: 0] shift_out;
 wire shift_flag;
-wire others_out;
+wire [data_width - 1: 0] others_out;
 wire others_flag;
 
 add_sub add_sub_component (
