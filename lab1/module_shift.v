@@ -3,27 +3,54 @@
 `define data_width 16
 
 
-module shift(
+module LLSModule(
     A,
-    B,
-    FuncCode,
-    C,
-    OverflowFlag);
+    C
+);
 
 input wire [`data_width - 1 : 0] A;
-input wire [`data_width - 1 : 0] B;
-input wire [3:0] FuncCode;
-output reg [`data_width - 1 : 0] C;
-output reg OverflowFlag;
+output wire [`data_width - 1 : 0] C;
 
-always@(A or FuncCode) begin
-    case (FuncCode)
-        `FUNC_LLS:begin C<=(A<<1); OverflowFlag<=0; end
-        `FUNC_LRS:begin C<=(A>>1); OverflowFlag<=0; end
-        `FUNC_ALS:begin C<=(A<<<1); OverflowFlag<=0; end
-        `FUNC_ARS:begin C<=(A>>>1); OverflowFlag<=0; end
-        default:begin C<=0; OverflowFlag<=0; end
-    endcase
-end
+assign C=(A<<1);
+
+endmodule
+
+
+module LRSModule(
+    A,
+    C
+);
+
+input wire [`data_width - 1 : 0] A;
+output wire [`data_width - 1 : 0] C;
+
+assign C=(A>>1);
+
+endmodule
+
+
+module ALSModule(
+    A,
+    C
+);
+
+input wire [`data_width - 1 : 0] A;
+output wire [`data_width - 1 : 0] C;
+
+assign C=(A<<<1);
+
+endmodule
+
+
+module ARSModule(
+    A,
+    C
+);
+
+input wire [`data_width - 1 : 0] A;
+output wire [`data_width - 1 : 0] C;
+
+// TODO: If something went wrong with right shift, check this part.
+assign C=($signed(A) >>> 1);
 
 endmodule

@@ -3,30 +3,105 @@
 `define data_width 16
 
 
-module bitwise(
+module NOTModule(
     A,
-    B,
-    FuncCode,
-    C,
-    OverflowFlag);
+    C
+);
+
+input wire [`data_width - 1 : 0] A;
+
+output wire [`data_width - 1 : 0] C;
+
+assign C=~A;
+
+endmodule
+
+
+module ANDModule(
+    A, B,
+    C
+);
 
 input wire [`data_width - 1 : 0] A;
 input wire [`data_width - 1 : 0] B;
-input wire [3:0] FuncCode;
-output reg [`data_width - 1 : 0] C;
-output reg OverflowFlag;
 
-always@(A or B or FuncCode) begin
-    case (FuncCode)
-        `FUNC_NOT:begin C<=~A; OverflowFlag<=0; end
-        `FUNC_AND:begin C<=A&B; OverflowFlag<=0; end
-        `FUNC_OR:begin C<=A|B; OverflowFlag<=0; end
-        `FUNC_NAND:begin C<=~(A&B); OverflowFlag<=0; end
-        `FUNC_NOR:begin C<=~(A|B); OverflowFlag<=0; end
-        `FUNC_XOR:begin C<=A^B; OverflowFlag<=0; end
-        `FUNC_XNOR:begin C<=~(A^B); OverflowFlag<=0; end
-        default:begin C<=0; OverflowFlag<=0; end
-    endcase
-end
+output wire [`data_width - 1 : 0] C;
+
+assign C=A&B;
+
+endmodule
+
+
+module ORModule(
+    A, B,
+    C
+);
+
+input wire [`data_width - 1 : 0] A;
+input wire [`data_width - 1 : 0] B;
+
+output wire [`data_width - 1 : 0] C;
+
+assign C=A|B;
+
+endmodule
+
+
+module NANDModule(
+    A, B,
+    C
+);
+
+input wire [`data_width - 1 : 0] A;
+input wire [`data_width - 1 : 0] B;
+
+output wire [`data_width - 1 : 0] C;
+
+assign C=~(A&B);
+
+endmodule
+
+
+module NORModule(
+    A, B,
+    C
+);
+
+input wire [`data_width - 1 : 0] A;
+input wire [`data_width - 1 : 0] B;
+
+output wire [`data_width - 1 : 0] C;
+
+assign C=~(A|B);
+
+endmodule
+
+
+module XORModule(
+    A, B,
+    C
+);
+
+input wire [`data_width - 1 : 0] A;
+input wire [`data_width - 1 : 0] B;
+
+output wire [`data_width - 1 : 0] C;
+
+assign C=A^B;
+
+endmodule
+
+
+module XNORModule(
+    A, B,
+    C
+);
+
+input wire [`data_width - 1 : 0] A;
+input wire [`data_width - 1 : 0] B;
+
+output wire [`data_width - 1 : 0] C;
+
+assign C=~(A^B);
 
 endmodule

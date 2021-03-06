@@ -24,7 +24,6 @@ wire [`data_width - 1 : 0] C;
 wire OverflowFlag;
 
 // Unit Under Test Port Mapping
-// TODO: instanciate ALU module here
 ALU alu(
 	.A(A),
 	.B(B),	

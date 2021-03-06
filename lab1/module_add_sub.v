@@ -3,44 +3,35 @@
 `define data_width 16
 
 
-module add_sub(
-    A,
-    B,
-    FuncCode,
-    C,
-    OverflowFlag);
+module ADDModule(
+    A, B,
+    C, OverflowFlag
+);
 
 input wire [`data_width - 1 : 0] A;
 input wire [`data_width - 1 : 0] B;
-input wire [3:0] FuncCode;
-output reg [`data_width - 1 : 0] C;
-output reg OverflowFlag;
 
-always@(A or B or FuncCode) begin
-    case (FuncCode)
-        `FUNC_ADD:begin
-            C=A+B;
-            if (A[`data_width - 1] == B[`data_width - 1])
-                if (A[`data_width - 1] != C[`data_width - 1])
-                    OverflowFlag=1;
-                else
-                    OverflowFlag=0;
-            else
-                OverflowFlag=0;
-         end
-        `FUNC_SUB:begin
-            C=A-B;
-            if (A[`data_width - 1] != B[`data_width - 1])
-                if (B[`data_width - 1] == C[`data_width - 1])
-                    OverflowFlag=1;
-                else
-                    OverflowFlag=0;
-            else
-                OverflowFlag=0;
+output wire [`data_width - 1 : 0] C;
+output wire OverflowFlag;
 
-        end
-        default:begin C<=0; OverflowFlag<=0; end
-    endcase
-end
+assign C=A+B;
+assign OverflowFlag = (A[`data_width - 1] == B[`data_width - 1]) & (A[`data_width - 1] != C[`data_width - 1]);
+
+endmodule
+
+
+module SUBModule(
+    A, B,
+    C, OverflowFlag
+);
+
+input wire [`data_width - 1 : 0] A;
+input wire [`data_width - 1 : 0] B;
+
+output wire [`data_width - 1 : 0] C;
+output wire OverflowFlag;
+
+assign C=A-B;
+assign OverflowFlag = (A[`data_width - 1] != B[`data_width - 1]) & (B[`data_width - 1] == C[`data_width - 1]);
 
 endmodule
