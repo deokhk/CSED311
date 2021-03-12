@@ -98,19 +98,6 @@ module calculate_current_state(
 		else
 			return_coin_nxt = 0;
 
-
-		// if (current_total_nxt >= item_price[`kNumItems-1]) available_item_nxt = 4'b1111;
-		// else if (current_total_nxt >= item_price[`kNumItems-2]) available_item_nxt = 4'b0111;
-		// else if (current_total_nxt >= item_price[`kNumItems-3]) available_item_nxt = 4'b0011;
-		// else if (current_total_nxt >= item_price[`kNumItems-4]) available_item_nxt = 4'b0001;
-		// else available_item_nxt = 4'b0000;
-
-
-		// if (i_select_item[`kNumItems-1] & available_item_nxt[`kNumItems-1]) output_item_nxt[`kNumItems-1] = 1; else output_item_nxt[`kNumItems-1] = 0;
-		// if (i_select_item[`kNumItems-2] & available_item_nxt[`kNumItems-2]) output_item_nxt[`kNumItems-2] = 1; else output_item_nxt[`kNumItems-2] = 0;
-		// if (i_select_item[`kNumItems-3] & available_item_nxt[`kNumItems-3]) output_item_nxt[`kNumItems-3] = 1; else output_item_nxt[`kNumItems-3] = 0;
-		// if (i_select_item[`kNumItems-4] & available_item_nxt[`kNumItems-4]) output_item_nxt[`kNumItems-4] = 1; else output_item_nxt[`kNumItems-4] = 0;
-
 	end
 
 

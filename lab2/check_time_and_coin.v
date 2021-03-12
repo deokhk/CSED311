@@ -42,37 +42,6 @@ module check_time_and_coin(
 	always @(*) begin
 		if ($signed(wait_time) <= 0) return_flag=1; else return_flag=0;
 	end
-	// always @(*) begin
-	// 	// TODO: 실제로 current_total 바꾸는 것은, calculate_current_state 모듈에서 해야함
-	// 	// TODO: 직접 1000원을 빼주느게 아니라, coin_value에 해당하는 값으로 빼주기!
-	// 	if (($signed(wait_time) <= 0)) begin
-	// 		tmp_total = current_total;
-
-	// 		if (tmp_total >= 1000) begin
-	// 			tmp_total = tmp_total - 1000;
-	// 			o_return_coin[`kNumCoins-1] = 1;
-	// 			end
-	// 		else
-	// 			o_return_coin[`kNumCoins-1] = 0;
-
-	// 		if (tmp_total >= 500) begin
-	// 			tmp_total = tmp_total - 500;
-	// 			o_return_coin[`kNumCoins-2] = 1;
-	// 			end
-	// 		else
-	// 			o_return_coin[`kNumCoins-2] = 0;
-
-	// 		if (tmp_total >= 100) begin
-	// 			tmp_total = tmp_total - 100;
-	// 			o_return_coin[`kNumCoins-3] = 1;
-	// 			end
-	// 		else
-	// 			o_return_coin[`kNumCoins-3] = 0;
-
-	// 		end
-	// 	else
-	// 		o_return_coin = 0;
-	// end
 
 	always @(posedge clk ) begin
 		if (!reset_n) begin

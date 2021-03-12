@@ -10,23 +10,23 @@ z2
 cModel Technology
 dC:/intelFPGA_pro/20.4/lab1
 vcalculate_current_state
-Z0 !s110 1615553945
+Z0 !s110 1615555184
 !i10b 1
-!s100 @D2M^jCF]N]8LDWXo`X7?0
+!s100 CFbjVOb85Sa@=BM3:eehb1
 Z1 !s11b Dg1SIo80bB@j0V0VzS_@n1
-IF4=MjhhQiHOGM]5`]T6b21
+IR5==@4h5a[KOCnel:AdAc2
 Z2 dC:/Users/deokhk/Desktop/CSED311/lab2
-w1615553932
+w1615554940
 8C:/Users/deokhk/Desktop/CSED311/lab2/calculate_current_state.v
 FC:/Users/deokhk/Desktop/CSED311/lab2/calculate_current_state.v
-!i122 78
-L0 5 132
+!i122 93
+L0 5 119
 Z3 VDg1SIo80bB@j0V0VzS_@n1
 Z4 OV;L;2020.3;71
 r1
 !s85 0
 31
-Z5 !s108 1615553945.000000
+Z5 !s108 1615555184.000000
 !s107 vending_machine_def.v|C:/Users/deokhk/Desktop/CSED311/lab2/calculate_current_state.v|
 !s90 -reportprogress|300|-work|work|-stats=none|C:/Users/deokhk/Desktop/CSED311/lab2/calculate_current_state.v|
 !i113 1
@@ -39,10 +39,10 @@ R0
 R1
 I[VGD9cHIc4Z`:TOE2`zna1
 R2
-w1615552804
+w1615554936
 8C:/Users/deokhk/Desktop/CSED311/lab2/change_state.v
 FC:/Users/deokhk/Desktop/CSED311/lab2/change_state.v
-!i122 79
+!i122 94
 L0 4 43
 R3
 R4
@@ -58,15 +58,15 @@ R7
 vcheck_time_and_coin
 R0
 !i10b 1
-!s100 lHT3MQdzBZkA_QSf^aAf52
+!s100 mC9KG8[_742T<9danZ9Eh3
 R1
-IMfhOmQ9ZT@cJKgS;XM:GO2
+I<4EC:[:QW:[aP:1^zGk`_1
 R2
-w1615551841
+w1615554925
 8C:/Users/deokhk/Desktop/CSED311/lab2/check_time_and_coin.v
 FC:/Users/deokhk/Desktop/CSED311/lab2/check_time_and_coin.v
-!i122 80
-L0 5 83
+!i122 95
+L0 5 52
 R3
 R4
 r1
@@ -81,15 +81,15 @@ R7
 vvending_machine
 R0
 !i10b 1
-!s100 D]]7j626HUb<]KTH]g8]e3
+!s100 9Hng:PL2m[TnblB=EYLDC3
 R1
-I2Ef5CPSOX][<]LTm>ig9_2
+I<m;]V]JC1]9nhbRND9R@90
 R2
-w1615552777
+w1615555142
 8C:/Users/deokhk/Desktop/CSED311/lab2/vending_machine.v
 FC:/Users/deokhk/Desktop/CSED311/lab2/vending_machine.v
-!i122 81
-L0 13 112
+!i122 96
+L0 13 98
 R3
 R4
 r1
@@ -102,23 +102,23 @@ R5
 R6
 R7
 vvending_machine_tb
-!s110 1615553946
+R0
 !i10b 1
-!s100 RccJbYXS?a>Q]0?3;dzGL1
+!s100 MQ:S889V2E@[Q>e;AVme`0
 R1
-I[AS>o`Y@KOB8OQoPogaeC3
+Ie[U6l;dOmGlo75J5nm@6E0
 R2
-w1615553751
+w1615555144
 8C:/Users/deokhk/Desktop/CSED311/lab2/vending_machine_tb.v
 FC:/Users/deokhk/Desktop/CSED311/lab2/vending_machine_tb.v
-!i122 82
-L0 9 406
+!i122 97
+L0 9 384
 R3
 R4
 r1
 !s85 0
 31
-!s108 1615553946.000000
+R5
 !s107 vending_machine_def.v|C:/Users/deokhk/Desktop/CSED311/lab2/vending_machine_tb.v|
 !s90 -reportprogress|300|-work|work|-stats=none|C:/Users/deokhk/Desktop/CSED311/lab2/vending_machine_tb.v|
 !i113 1
