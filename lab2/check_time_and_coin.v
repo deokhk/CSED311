@@ -45,24 +45,25 @@ module check_time_and_coin(
 
 	always @(*) begin
 		// TODO: 실제로 current_total 바꾸는 것은, calculate_current_state 모듈에서 해야함
+		// TODO: 직접 1000원을 빼주느게 아니라, coin_value에 해당하는 값으로 빼주기!
 		if ((wait_time <= 0) || (i_trigger_return)) begin
 			tmp_total = current_total;
 
 			if (tmp_total >= 1000) begin
-				tmp_total -= 1000;
+				tmp_total = tmp_total - 1000;
 				o_return_coin[`kNumCoins-1] = 1;
-				end;
+				end
 
 			if (tmp_total >= 500) begin
-				tmp_total -= 500;
+				tmp_total = tmp_total - 500;
 				o_return_coin[`kNumCoins-2] = 1;
-				end;
+				end
 
 			if (tmp_total >= 100) begin
-				tmp_total -= 100;
+				tmp_total = tmp_total - 100;
 				o_return_coin[`kNumCoins-3] = 1;
-				end;
-			end;
+				end
+			end
 		else
 			o_return_coin = 0;
 	end
@@ -70,12 +71,12 @@ module check_time_and_coin(
 	always @(posedge clk ) begin
 		if (!reset_n) begin
 		// NOTE: reset_n 은 0 일 때 reset 하는 거임!
-			o_return_coin = 0;
-			wait_time = 100;
+			o_return_coin <= 0;
+			wait_time <= 100;
 		end
 		else begin
 		    // TODO: output reg o_return_coin 도 여기서 해야하나?
-			wait_time = wait_time-1;
+			wait_time <= wait_time-1;
 		end
 	end
 endmodule 
