@@ -52,6 +52,14 @@ wire [2:0]o_return_coin;
 
 wire [`kTotalBits-1:0] current_total;
 
+// ==========================================
+
+wire [`kTotalBits-1:0] current_total_nxt;
+wire [2:0] return_coin_nxt;
+
+// ==========================================
+
+
 integer Passed;			// # of passes
 integer Failed;			// # of fails
 integer Current;	        // # current_total for "checking returned money"
@@ -66,7 +74,12 @@ integer Current;	        // # current_total for "checking returned money"
 		.o_available_item(o_available_item),
 		.o_output_item(o_output_item),
 		.o_return_coin(o_return_coin),
-		.current_total(current_total));
+		.current_total(current_total),
+
+		.current_total_nxt(current_total_nxt),
+		.return_coin_nxt(return_coin_nxt)
+		
+		);
 
 // clock signal
 initial clk <= 0;

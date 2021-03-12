@@ -21,7 +21,13 @@ module vending_machine (
 	o_available_item,			// Sign of the item availability
 	o_output_item,			// Sign of the item withdrawal
 	o_return_coin,				// Sign of the coin return
-	current_total
+
+
+	current_total,
+
+
+	current_total_nxt,
+	return_coin_nxt
 );
 
 	// Ports Declaration
@@ -39,6 +45,10 @@ module vending_machine (
 
 	output [`kTotalBits-1:0] current_total;
 
+
+	output [`kTotalBits-1:0] current_total_nxt;
+	output [`kNumCoins-1:0] return_coin_nxt;
+
 	
 
 	// Do not modify the values.
@@ -55,11 +65,10 @@ module vending_machine (
 	// Internal states. You may add your own net variables.
 	// wire [`kTotalBits-1:0] current_total;
 	
-	// Next internal states. You may add your own net variables.
-	wire [`kTotalBits-1:0] current_total_nxt;
+	// wire [`kTotalBits-1:0] current_total_nxt;
 	wire [`kNumItems-1:0] available_item_nxt;
 	wire [`kNumItems-1:0] output_item_nxt;
-	wire [`kNumCoins-1:0] return_coin_nxt;
+	// wire [`kNumCoins-1:0] return_coin_nxt;
 	
 	// Variables. You may add more your own net variables.
 	wire [31:0] wait_time;

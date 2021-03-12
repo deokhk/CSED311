@@ -69,28 +69,10 @@ module calculate_current_state(
 		if (i_select_item[`kNumItems-4] & now_available_item[`kNumItems-4]) tmp_total_for_current = tmp_total_for_current - item_price[`kNumItems-4];
 
 		current_total_nxt = tmp_total_for_current;
-	end
 
-
-	// Combinational logic for the outputs
-	always @(*) begin
-
-		if (current_total >= item_price[`kNumItems-1]) available_item_nxt = 4'b1111;
-		else if (current_total >= item_price[`kNumItems-2]) available_item_nxt = 4'b0111;
-		else if (current_total >= item_price[`kNumItems-3]) available_item_nxt = 4'b0011;
-		else if (current_total >= item_price[`kNumItems-4]) available_item_nxt = 4'b0001;
-		else available_item_nxt = 4'b0000;
-
-		// NOTE: Assume that there is no case to select more than two items simultaneously
-		// Because, if current_total == 1400 and user select 1000 item and 500 item, which means required current_total > 1400
-		// There is no guidelines in lab.pdf which one is out.
-		if (i_select_item[`kNumItems-1] & now_available_item[`kNumItems-1]) output_item_nxt[`kNumItems-1] = 1; else output_item_nxt[`kNumItems-1] = 0;
-		if (i_select_item[`kNumItems-2] & now_available_item[`kNumItems-2]) output_item_nxt[`kNumItems-2] = 1; else output_item_nxt[`kNumItems-2] = 0;
-		if (i_select_item[`kNumItems-3] & now_available_item[`kNumItems-3]) output_item_nxt[`kNumItems-3] = 1; else output_item_nxt[`kNumItems-3] = 0;
-		if (i_select_item[`kNumItems-4] & now_available_item[`kNumItems-4]) output_item_nxt[`kNumItems-4] = 1; else output_item_nxt[`kNumItems-4] = 0;
 
 		if (i_trigger_return | return_flag) begin
-			tmp_total_for_return = current_total;
+			tmp_total_for_return = current_total_nxt;
 			if (tmp_total_for_return >= 1000) begin
 				tmp_total_for_return = tmp_total_for_return - 1000;
 				return_coin_nxt[`kNumCoins-1] = 1;
@@ -115,6 +97,40 @@ module calculate_current_state(
 		end
 		else
 			return_coin_nxt = 0;
+
+
+		// if (current_total_nxt >= item_price[`kNumItems-1]) available_item_nxt = 4'b1111;
+		// else if (current_total_nxt >= item_price[`kNumItems-2]) available_item_nxt = 4'b0111;
+		// else if (current_total_nxt >= item_price[`kNumItems-3]) available_item_nxt = 4'b0011;
+		// else if (current_total_nxt >= item_price[`kNumItems-4]) available_item_nxt = 4'b0001;
+		// else available_item_nxt = 4'b0000;
+
+
+		// if (i_select_item[`kNumItems-1] & available_item_nxt[`kNumItems-1]) output_item_nxt[`kNumItems-1] = 1; else output_item_nxt[`kNumItems-1] = 0;
+		// if (i_select_item[`kNumItems-2] & available_item_nxt[`kNumItems-2]) output_item_nxt[`kNumItems-2] = 1; else output_item_nxt[`kNumItems-2] = 0;
+		// if (i_select_item[`kNumItems-3] & available_item_nxt[`kNumItems-3]) output_item_nxt[`kNumItems-3] = 1; else output_item_nxt[`kNumItems-3] = 0;
+		// if (i_select_item[`kNumItems-4] & available_item_nxt[`kNumItems-4]) output_item_nxt[`kNumItems-4] = 1; else output_item_nxt[`kNumItems-4] = 0;
+
+	end
+
+
+	// Combinational logic for the outputs
+	always @(*) begin
+
+		if (current_total >= item_price[`kNumItems-1]) available_item_nxt = 4'b1111;
+		else if (current_total >= item_price[`kNumItems-2]) available_item_nxt = 4'b0111;
+		else if (current_total >= item_price[`kNumItems-3]) available_item_nxt = 4'b0011;
+		else if (current_total >= item_price[`kNumItems-4]) available_item_nxt = 4'b0001;
+		else available_item_nxt = 4'b0000;
+
+		// NOTE: Assume that there is no case to select more than two items simultaneously
+		// Because, if current_total == 1400 and user select 1000 item and 500 item, which means required current_total > 1400
+		// There is no guidelines in lab.pdf which one is out.
+		if (i_select_item[`kNumItems-1] & now_available_item[`kNumItems-1]) output_item_nxt[`kNumItems-1] = 1; else output_item_nxt[`kNumItems-1] = 0;
+		if (i_select_item[`kNumItems-2] & now_available_item[`kNumItems-2]) output_item_nxt[`kNumItems-2] = 1; else output_item_nxt[`kNumItems-2] = 0;
+		if (i_select_item[`kNumItems-3] & now_available_item[`kNumItems-3]) output_item_nxt[`kNumItems-3] = 1; else output_item_nxt[`kNumItems-3] = 0;
+		if (i_select_item[`kNumItems-4] & now_available_item[`kNumItems-4]) output_item_nxt[`kNumItems-4] = 1; else output_item_nxt[`kNumItems-4] = 0;
+
 	end
 
 endmodule 
