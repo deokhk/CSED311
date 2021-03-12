@@ -50,6 +50,8 @@ wire [3:0]o_available_item;
 wire [3:0]o_output_item;
 wire [2:0]o_return_coin;
 
+wire [`kTotalBits-1:0] current_total;
+
 integer Passed;			// # of passes
 integer Failed;			// # of fails
 integer Current;	        // # current_total for "checking returned money"
@@ -63,7 +65,8 @@ integer Current;	        // # current_total for "checking returned money"
 		.i_trigger_return(i_trigger_return),
 		.o_available_item(o_available_item),
 		.o_output_item(o_output_item),
-		.o_return_coin(o_return_coin));
+		.o_return_coin(o_return_coin),
+		.current_total(current_total));
 
 // clock signal
 initial clk <= 0;
@@ -229,6 +232,12 @@ endtask
 
 task WaitReturnTest;
 	begin
+		// Insert100Coin();
+		// Insert100Coin();
+		// Insert100Coin();
+		// Insert100Coin(); // 400
+		// $display("Real Test Start");
+
 		Insert100Coin();
 		Insert100Coin();
 		Insert100Coin();

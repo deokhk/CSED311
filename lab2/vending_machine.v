@@ -20,7 +20,8 @@ module vending_machine (
 
 	o_available_item,			// Sign of the item availability
 	o_output_item,			// Sign of the item withdrawal
-	o_return_coin				// Sign of the coin return
+	o_return_coin,				// Sign of the coin return
+	current_total
 );
 
 	// Ports Declaration
@@ -36,6 +37,7 @@ module vending_machine (
 	output [`kNumItems-1:0] o_output_item;
 	output [`kNumCoins-1:0] o_return_coin;
 
+	output [`kTotalBits-1:0] current_total;
 
 	
 
@@ -51,45 +53,63 @@ module vending_machine (
 	assign coin_value[2] = 1000;
 
 	// Internal states. You may add your own net variables.
-	wire [`kTotalBits-1:0] current_total;
+	// wire [`kTotalBits-1:0] current_total;
 	
 	// Next internal states. You may add your own net variables.
 	wire [`kTotalBits-1:0] current_total_nxt;
-
+	wire [`kNumItems-1:0] available_item_nxt;
+	wire [`kNumItems-1:0] output_item_nxt;
+	wire [`kNumCoins-1:0] return_coin_nxt;
 	
 	// Variables. You may add more your own net variables.
 	wire [31:0] wait_time;
+	wire return_flag;
 
 
 	// This module interface, structure, and given a number of modules are not mandatory but recommended.
 	// However, Implementations that use modules are mandatory.
 		
-  	check_time_and_coin check_time_and_coin_module(.i_input_coin(i_input_coin),
-  									.i_select_item(i_select_item),
-									.clk(clk),
-									.reset_n(reset_n),
-									.o_available_item(o_available_item),
-									.i_trigger_return(i_trigger_return),
-									.current_total(current_total),
-									.wait_time(wait_time),
-									.o_return_coin(o_return_coin));
+  	check_time_and_coin check_time_and_coin_module(
+		.clk(clk),
+		.reset_n(reset_n),
+		.i_input_coin(i_input_coin),
+		.i_select_item(i_select_item),									
+		.o_available_item(o_available_item),
 
-	calculate_current_state calculate_current_state_module(.i_input_coin(i_input_coin),
-										.i_select_item(i_select_item),
-										.item_price(item_price),
-										.coin_value(coin_value),
-										.current_total(current_total),
-										.current_total_nxt(current_total_nxt),
-										.wait_time(wait_time),
-										.o_return_coin(o_return_coin),
-										.o_available_item(o_available_item),
-										.o_output_item(o_output_item));
+		.return_flag(return_flag),
+		.wait_time(wait_time)
+	);
+
+	calculate_current_state calculate_current_state_module(
+		.i_input_coin(i_input_coin),
+		.i_select_item(i_select_item),
+		.o_return_coin(o_return_coin),
+		.i_trigger_return(i_trigger_return),
+		.return_flag(return_flag),
+		.item_price(item_price),
+		.coin_value(coin_value),
+		.current_total(current_total),
+		.now_available_item(o_available_item), // NOTE: 순서 다를 수도
+
+		.current_total_nxt(current_total_nxt),
+		.available_item_nxt(available_item_nxt),
+		.output_item_nxt(output_item_nxt),
+		.return_coin_nxt(return_coin_nxt)
+	);
 	
   	change_state change_state_module(
-						.clk(clk),
-						.reset_n(reset_n),
-						.current_total_nxt(current_total_nxt),
-						.current_total(current_total));
+		.clk(clk),
+		.reset_n(reset_n),
+		.current_total_nxt(current_total_nxt),
+		.available_item_nxt(available_item_nxt),
+		.output_item_nxt(output_item_nxt),
+		.return_coin_nxt(return_coin_nxt),
+
+		.current_total(current_total),
+		.o_available_item(o_available_item),
+		.o_output_item(o_output_item),
+		.o_return_coin(o_return_coin)
+	);
 
 
 endmodule
