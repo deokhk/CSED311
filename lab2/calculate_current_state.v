@@ -30,6 +30,10 @@ module calculate_current_state(
 
 	reg [`kTotalBits-1:0] tmp_total;
 
+    initial begin
+		o_available_item <= 0;
+		o_output_item <= 0;
+	end
 
 	
 	// Combinational logic for the next states
@@ -70,10 +74,10 @@ module calculate_current_state(
 		// NOTE: Assume that there is no case to select more than two items simultaneously
 		// Because, if current_total == 1400 and user select 1000 item and 500 item, which means required current_total > 1400
 		// There is no guidelines in lab.pdf which one is out.
-		if (i_select_item[`kNumItems-1] & o_available_item[`kNumItems-1]) o_output_item[`kNumItems-1]=1;
-		if (i_select_item[`kNumItems-2] & o_available_item[`kNumItems-2]) o_output_item[`kNumItems-2]=1;
-		if (i_select_item[`kNumItems-3] & o_available_item[`kNumItems-3]) o_output_item[`kNumItems-3]=1;
-		if (i_select_item[`kNumItems-4] & o_available_item[`kNumItems-4]) o_output_item[`kNumItems-4]=1;
+		if (i_select_item[`kNumItems-1] & o_available_item[`kNumItems-1]) o_output_item[`kNumItems-1] = 1; else o_output_item[`kNumItems-1] = 0;
+		if (i_select_item[`kNumItems-2] & o_available_item[`kNumItems-2]) o_output_item[`kNumItems-2] = 1; else o_output_item[`kNumItems-2] = 0;
+		if (i_select_item[`kNumItems-3] & o_available_item[`kNumItems-3]) o_output_item[`kNumItems-3] = 1; else o_output_item[`kNumItems-3] = 0;
+		if (i_select_item[`kNumItems-4] & o_available_item[`kNumItems-4]) o_output_item[`kNumItems-4] = 1; else o_output_item[`kNumItems-4] = 0;
 
 	end
 
