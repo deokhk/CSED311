@@ -1,5 +1,12 @@
+work
+work/*
 ./*/work
+./*/work/*
+
+
 *.mti
 *.wlf
 *.mtf
+*.mpf
+
 
