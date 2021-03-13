@@ -10,7 +10,7 @@ z2
 cModel Technology
 dC:/intelFPGA_pro/20.4/lab1
 vcalculate_current_state
-Z0 !s110 1615555184
+Z0 !s110 1615609511
 !i10b 1
 !s100 CFbjVOb85Sa@=BM3:eehb1
 Z1 !s11b Dg1SIo80bB@j0V0VzS_@n1
@@ -19,14 +19,14 @@ Z2 dC:/Users/deokhk/Desktop/CSED311/lab2
 w1615554940
 8C:/Users/deokhk/Desktop/CSED311/lab2/calculate_current_state.v
 FC:/Users/deokhk/Desktop/CSED311/lab2/calculate_current_state.v
-!i122 93
+!i122 98
 L0 5 119
 Z3 VDg1SIo80bB@j0V0VzS_@n1
 Z4 OV;L;2020.3;71
 r1
 !s85 0
 31
-Z5 !s108 1615555184.000000
+Z5 !s108 1615609511.000000
 !s107 vending_machine_def.v|C:/Users/deokhk/Desktop/CSED311/lab2/calculate_current_state.v|
 !s90 -reportprogress|300|-work|work|-stats=none|C:/Users/deokhk/Desktop/CSED311/lab2/calculate_current_state.v|
 !i113 1
@@ -42,7 +42,7 @@ R2
 w1615554936
 8C:/Users/deokhk/Desktop/CSED311/lab2/change_state.v
 FC:/Users/deokhk/Desktop/CSED311/lab2/change_state.v
-!i122 94
+!i122 99
 L0 4 43
 R3
 R4
@@ -65,7 +65,7 @@ R2
 w1615554925
 8C:/Users/deokhk/Desktop/CSED311/lab2/check_time_and_coin.v
 FC:/Users/deokhk/Desktop/CSED311/lab2/check_time_and_coin.v
-!i122 95
+!i122 100
 L0 5 52
 R3
 R4
@@ -88,7 +88,7 @@ R2
 w1615555142
 8C:/Users/deokhk/Desktop/CSED311/lab2/vending_machine.v
 FC:/Users/deokhk/Desktop/CSED311/lab2/vending_machine.v
-!i122 96
+!i122 101
 L0 13 98
 R3
 R4
@@ -111,7 +111,7 @@ R2
 w1615555144
 8C:/Users/deokhk/Desktop/CSED311/lab2/vending_machine_tb.v
 FC:/Users/deokhk/Desktop/CSED311/lab2/vending_machine_tb.v
-!i122 97
+!i122 102
 L0 9 384
 R3
 R4
