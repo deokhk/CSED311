@@ -28,15 +28,15 @@ module check_time_and_coin(
 	// initiate values
 	initial begin
 		return_flag <= 'd0;
-		wait_time <= 'd10;
+		wait_time <= 'd100;
 	end
 
 	// update waiting time
 	always @(i_input_coin, i_select_item) begin
 		if (i_input_coin != 0)
-		    wait_time = 10;
+		    wait_time = 100;
 		if (i_select_item & o_available_item)
-			wait_time = 10;
+			wait_time = 100;
 	end
 
 	always @(*) begin
@@ -46,7 +46,7 @@ module check_time_and_coin(
 	always @(posedge clk ) begin
 		if (!reset_n) begin
 		// NOTE: reset_n 은 0 일 때 reset 하는 거임!
-			wait_time <= 10;
+			wait_time <= 100;
 		end
 		else begin
 		    // TODO: output reg o_return_coin 도 여기서 해야하나?
