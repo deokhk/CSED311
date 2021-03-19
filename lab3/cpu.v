@@ -8,6 +8,10 @@ module cpu (readM, writeM, address, data, ackOutput, inputReady, reset_n, clk);
 	input ackOutput;								
 	input inputReady;								
 	input reset_n;									
-	input clk;			
-																																					  
+	input clk;
+
+
+	reg [`WORD_SIZE-1:0] PC;
+
+
 endmodule							  																		  
