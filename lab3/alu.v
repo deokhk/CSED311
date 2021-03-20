@@ -10,13 +10,14 @@
 module alu (alu_input_1, alu_input_2,
 			opcode, func_code,
 			
-			alu_output);
+			alu_output, bcond);
 	input [`NumBits-1:0] alu_input_1;
 	input [`NumBits-1:0] alu_input_2;
     input wire [3:0] opcode;
     input wire [5:0] func_code;
 
 	output reg [`NumBits-1:0] alu_output;
+	output reg bcond;
 
 	wire [`NumBits - 1: 0] add_out;
 	wire [`NumBits - 1: 0] sub_out;
@@ -90,6 +91,8 @@ module alu (alu_input_1, alu_input_2,
 					default:begin alu_output = 0; end
 				endcase
 			end
+
+			`BNE_OP:begin alu_output = (alu_input_1 != alu_input_2); end
 
 			`ADI_OP:begin alu_output = add_out; end
 			`ORI_OP:begin alu_output = orr_out; end
