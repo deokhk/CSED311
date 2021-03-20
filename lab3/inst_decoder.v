@@ -25,6 +25,7 @@ module inst_decoder (inst,
     assign opcode = inst[`NumBits-1:12];
     assign rs = inst[11:10];
     assign rt = inst[9:8];
+    // TODO: not rd ?
     assign rd = ((opcode == `JAL_OP) || ((opcode == `JRL_OP) && (func_code == `INST_FUNC_JRL))) ? 2 : inst[7:6];
     assign func_code = inst[5:0];
     assign immediate_and_offset = inst[7:0];
