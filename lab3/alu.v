@@ -7,10 +7,15 @@
 `define	NumBits	16
 
 
-module alu (alu_input_1, alu_input_2, func_code, alu_output);
+module alu (alu_input_1, alu_input_2,
+			opcode, func_code,
+			
+			alu_output);
 	input [`NumBits-1:0] alu_input_1;
 	input [`NumBits-1:0] alu_input_2;
-	input [2:0] func_code;
+    input wire [3:0] opcode;
+    input wire [5:0] func_code;
+
 	output reg [`NumBits-1:0] alu_output;
 
 	wire [`NumBits - 1: 0] add_out;
@@ -23,6 +28,8 @@ module alu (alu_input_1, alu_input_2, func_code, alu_output);
 	wire [`NumBits - 1: 0] tcp_out;
 	wire [`NumBits - 1: 0] shl_out;
 	wire [`NumBits - 1: 0] shr_out;
+
+
 
 	ADDModule add_module (
 		.A(alu_input_1), .B(alu_input_2), 
@@ -66,18 +73,29 @@ module alu (alu_input_1, alu_input_2, func_code, alu_output);
 		alu_output = 0;
 	end
 
-	always @(alu_input_1 or alu_input_2 or func_code) begin
-		case (func_code)
-			`FUNC_ADD:begin alu_output = add_out; end
-			`FUNC_SUB:begin alu_output = sub_out; end
+	always @(alu_input_1 or alu_input_2 or opcode or func_code) begin
+		case (opcode)
+			`ALU_OP:begin
+				case (func_code)
+					`INST_FUNC_ADD:begin alu_output = add_out; end
+					`INST_FUNC_SUB:begin alu_output = sub_out; end
+					`INST_FUNC_AND:begin alu_output = and_out; end
+					`INST_FUNC_ORR:begin alu_output = orr_out; end
+					`INST_FUNC_NOT:begin alu_output = not_out; end
+					`INST_FUNC_TCP:begin alu_output = tcp_out; end
+					`INST_FUNC_SHL:begin alu_output = shl_out; end
+					`INST_FUNC_SHR:begin alu_output = shr_out; end
+					`INST_FUNC_JPR:begin alu_output = alu_input_1; end
+					`INST_FUNC_JRL:begin alu_output = alu_input_1; end
+					default:begin alu_output = 0; end
+				endcase
+			end
 
-			`FUNC_AND:begin alu_output = and_out; end
-			`FUNC_ORR:begin alu_output = orr_out; end
-			`FUNC_NOT:begin alu_output = not_out; end
-
-			`FUNC_TCP:begin alu_output = tcp_out; end
-			`FUNC_SHL:begin alu_output = shl_out; end
-			`FUNC_SHR:begin alu_output = shr_out; end
+			`ADI_OP:begin alu_output = add_out; end
+			`ORI_OP:begin alu_output = orr_out; end
+			`LHI_OP:begin alu_output = shl_out; end
+			`LWD_OP:begin alu_output = add_out; end
+			`SWD_OP:begin alu_output = add_out; end
 
 			default:begin alu_output = 0; end
 		endcase

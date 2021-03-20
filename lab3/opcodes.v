@@ -4,8 +4,8 @@
 `define	ADI_OP	4'd4 // ADDI. rt = rs + imm
 `define	ORI_OP	4'd5 // rt = rs | imm
 `define	LHI_OP	4'd6 // rt = (imm << 8)
-`define	LWD_OP	4'd7 // rt = memory[rs + offset]  		  
-`define	SWD_OP	4'd8 // memory[rs + offset] = rt 
+`define	LWD_OP	4'd7 // rt = memory[rs + offset]
+`define	SWD_OP	4'd8 // memory[rs + offset] = rt
 
 `define	BNE_OP	4'd0 // if rs!=rt then pc=pc+offset else pc=pc+4
 `define	BEQ_OP	4'd1 // if rs=rt then pc=pc+offset else pc=pc+4
