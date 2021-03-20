@@ -1,6 +1,9 @@
 `include "opcodes.v" 	   
 
-module cpu (readM, writeM, address, data, ackOutput, inputReady, reset_n, clk);
+module cpu (data, ackOutput, inputReady,
+			reset_n, clk,
+
+			readM, writeM, address);
 	output readM;									
 	output writeM;								
 	output [`WORD_SIZE-1:0] address;	

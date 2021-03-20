@@ -1,4 +1,4 @@
-		  
+// read register 1: rs , read register 2: rt, write register: rd
 // Opcode
 `define	ALU_OP	4'd15
 `define	ADI_OP	4'd4 // ADDI. rt = rs + imm
@@ -6,14 +6,15 @@
 `define	LHI_OP	4'd6 // rt = (imm << 8)
 `define	LWD_OP	4'd7 // rt = memory[rs + offset]  		  
 `define	SWD_OP	4'd8 // memory[rs + offset] = rt 
-`define	BNE_OP	4'd0 // 
-`define	BEQ_OP	4'd1
-`define BGZ_OP	4'd2
-`define BLZ_OP	4'd3
-`define	JMP_OP	4'd9
-`define JAL_OP	4'd10 
-`define	JPR_OP	4'd15
-`define	JRL_OP	4'd15
+`define	BNE_OP	4'd0 // if rs!=rt then pc=pc+offset else pc=pc+4
+`define	BEQ_OP	4'd1 // if rs=rt then pc=pc+offset else pc=pc+4
+`define BGZ_OP	4'd2 // if rs>0 then pc=pc+offset else pc=pc+4
+`define BLZ_OP	4'd3 // if rs<0 then pc=pc+offset else pc=pc+4
+`define	JMP_OP	4'd9 // pc = {pc[15:12], target[11:0]}
+`define JAL_OP	4'd10 // reg[2] = pc; pc = {pc[15:12], target[11:0]}
+`define	JPR_OP	4'd15 // pc = rs
+`define	JRL_OP	4'd15 // reg[2] = pc; pc = rs;
+// TODO: JAL, JRL. pc+4 ? or pc ?
 
 // ALU Function Codes
 `define	FUNC_ADD	3'b000

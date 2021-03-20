@@ -1,8 +1,10 @@
-// input: 16bit instruction
-// output: 4bit opcode, 2bit rs, 2bit rt, 2bit rd, 6bit function, 8bit immediate, 12bit targetaddress
 `define	NumBits	16
 
 
+// input: 16bit instruction
+// output: 4bit opcode, 2bit rs, 2bit rt,
+//         2bit rd, 6bit function,
+//         8bit immediate, 12bit targetaddress
 module inst_decoder (inst, 
                     
                     opcode, rs, rt, rd, func_code,

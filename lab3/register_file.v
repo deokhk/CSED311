@@ -1,5 +1,8 @@
-module register_file(read_out1, read_out2,
-                     read1, read2, write_reg, write_data, reg_write_signal, clk); 
+module register_file(read1, read2,
+                     write_reg, write_data,
+                     reg_write_signal, clk,
+
+                     read_out1, read_out2); 
     output reg [15:0] read_out1; // data
     output reg [15:0] read_out2; // data
 
