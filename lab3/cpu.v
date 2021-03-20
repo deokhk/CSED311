@@ -22,7 +22,24 @@ module cpu (data,
 
 	alu uut (.alu_result(address))
 	register_file rf (.rt(data))
+
+
+
+	// combinational logic
+	always @(*) begin
 	// 컨트롤 모듈에서, SWD 면 -> writeM = 1
 	// 끝나면 writeM  = 0
+	// ackOutput == 0 이 되면, -> writeM  = 0
+	// read 는 input ready 
+
+	end
+
+
+
+	// sequential logic 으로 pc, 다른 register 연산 수행
+	always @(posedge clk) begin
+
+
+	end
 
 endmodule							  																		  
