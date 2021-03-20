@@ -1,7 +1,7 @@
 `include "opcodes.v"
-`include "alu_operations/module_add_sub.v"
-`include "alu_operations/module_bitwise.v"
-`include "alu_operations/module_others.v"
+`include "module_add_sub.v"
+`include "module_bitwise.v"
+`include "module_others.v"
 
 
 `define	NumBits	16
