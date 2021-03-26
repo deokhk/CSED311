@@ -9,8 +9,8 @@
 module cpu (readM, writeM, address,
 			data,
 			ackOutput, inputReady, reset_n, clk);
-	inout [`WORD_SIZE-1:0] data;	
-
+	inout [`WORD_SIZE-1:0] data;
+	
 	input ackOutput; // 메모리에 데이터 다 썼다고 알려줌. 좀 있다 0 됨
 	input inputReady; // 메모리가 데이터 다 읽었다고 알려줌. 좀 있다 0 됨. 따라서 지금 data는 memory로부터 read한 값임.
 	input reset_n; // 0 일 때 reset. 1 이면 정상작동
@@ -56,13 +56,6 @@ module cpu (readM, writeM, address,
 	wire [15:0] write_data;
 	wire [15:0] mem_to_reg_data;
 	wire [15:0] alu_src_data;
-
-
-	initial begin
-		pc = 0;
-		one = 1;
-		instruction = 0;
-	end
 
 
 	ADDModule pc_plus_1_adder (
@@ -140,6 +133,17 @@ module cpu (readM, writeM, address,
 	);
 
 
+	assign data = (writeM || ackOutput) ? reg_data2 : `WORD_SIZE'bz;
+
+
+	initial begin
+		pc = 0;
+		one = 1;
+		instruction = 0;
+		readM = 0;
+		writeM = 0;
+		address = 0;
+	end
 
 
 	// combinational logic
@@ -148,14 +152,38 @@ module cpu (readM, writeM, address,
 	// 끝나면 writeM  = 0
 	// ackOutput == 0 이 되면, -> writeM  = 0
 	// read 는 input ready 
-		if(inputReady == 1) begin
-			instruction = data;
+		if (inputReady == 1) begin
+			if (opcode != `LWD_OP) begin
+				instruction = data;
+			end
 			readM = 0;
 		end
+		else begin readM = 0; end
 
 		if(ackOutput == 1) begin
 			writeM = 0;
 		end
+		else begin writeM = 0; end
+
+		if (opcode == `LWD_OP) begin
+			address = alu_output;
+			readM = 1;
+		end
+
+		if (opcode == `SWD_OP) begin
+			address = alu_output;
+			writeM = 1;
+		end
+
+		if (reset_n == 0) begin
+			pc = 0;
+			one = 1;
+			instruction = 0;
+			readM = 0;
+			writeM = 0;
+			address = 0;
+		end
+
 	end
 
 
@@ -177,16 +205,16 @@ module cpu (readM, writeM, address,
 		// 근데 LWD 거나 SWD 이면 시그널 보내는 거는
 		// Combinational logic 에서 가능한 거 아님???
 
-		if (opcode == `LWD_OP) begin
-			address <= alu_output;
-			readM <= 1;
+		// if (opcode == `LWD_OP) begin
+		// 	address <= alu_output;
+		// 	readM <= 1;
 
-		end
+		// end
 
-		if (opcode == `SWD_OP) begin
-			address <= alu_output;
-			writeM <= 1;
-		end
+		// if (opcode == `SWD_OP) begin
+		// 	address <= alu_output;
+		// 	writeM <= 1;
+		// end
 
 		pc <= pc_next;
 	end
