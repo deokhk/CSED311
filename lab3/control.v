@@ -70,7 +70,7 @@ module control (opcode, func_code,
                 pc_to_reg = 0;
             end
         end
-        else if ((opcode == `ADI_OP) || (opcode == `ORI_OP)) begin
+        else if ((opcode == `ADI_OP) || (opcode == `ORI_OP) || (opcode == `LHI_OP)) begin
             is_branch = 0;
             is_jmp_jal = 0;
             is_jpr_jrl = 0;
@@ -81,18 +81,71 @@ module control (opcode, func_code,
             reg_write = 1;
             pc_to_reg = 0;
         end
-        else if (opcode == `LHI_OP) begin
+        else if (opcode == `LWD_OP) begin
+            is_branch = 0;
+            is_jmp_jal = 0;
+            is_jpr_jrl = 0;
+            mem_read = 1;
+            mem_to_reg = 1;
+            mem_write = 0;
+            alu_src = 1;
+            reg_write = 1;
+            pc_to_reg = 0;
+        end
+        else if (opcode == `SWD_OP) begin
             is_branch = 0;
             is_jmp_jal = 0;
             is_jpr_jrl = 0;
             mem_read = 0;
             mem_to_reg = 0;
-            mem_write = 0;
+            mem_write = 1;
             alu_src = 1;
-            reg_write = 1;
+            reg_write = 0;
             pc_to_reg = 0;
+        end
+        else if ((opcode == `BNE_OP) || (opcode == `BEQ_OP) || (opcode == `BGZ_OP) || (opcode == `BLZ_OP)) begin
+            is_branch = 1;
+            is_jmp_jal = 0;
+            is_jpr_jrl = 0;
+            mem_read = 0;
+            mem_to_reg = 0;
+            mem_write = 0;
+            alu_src = 0;
+            reg_write = 0;
+            pc_to_reg = 0;        
+        end
+        else if (opcode == `JMP_OP) begin
+            is_branch = 0;
+            is_jmp_jal = 1;
+            is_jpr_jrl = 0;
+            mem_read = 0;
+            mem_to_reg = 0;
+            mem_write = 0;
+            alu_src = 0;
+            reg_write = 0;
+            pc_to_reg = 0;
+        end
+        else if (opcode == `JAL_OP) begin
+            is_branch = 0;
+            is_jmp_jal = 1;
+            is_jpr_jrl = 0;
+            mem_read = 0;
+            mem_to_reg = 0;
+            mem_write = 0;
+            alu_src = 0;
+            reg_write = 0;
+            pc_to_reg = 1;
         end
         else begin
+            is_branch = 0;
+            is_jmp_jal = 0;
+            is_jpr_jrl = 0;
+            mem_read = 0;
+            mem_to_reg = 0;
+            mem_write = 0;
+            alu_src = 0;
+            reg_write = 0;
+            pc_to_reg = 0;
         end
     end
 
