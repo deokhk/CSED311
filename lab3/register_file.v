@@ -44,6 +44,7 @@ module RegisterFile(in_addr1, in_addr2,
         endcase
     end
 
+    // TODO: negedge 로도 바꿔서 돌려봐
     always @(posedge clk) begin
 
         if (reg_write_signal) begin

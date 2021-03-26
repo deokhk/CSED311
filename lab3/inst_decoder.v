@@ -21,11 +21,6 @@ module InstDecoder (inst,
     assign opcode = inst[`NumBits-1:12];
     assign in_addr1 = inst[11:10];
     assign in_addr2 = inst[9:8];
-    // TODO: not rd ?
-    // TODO: inst[9:8] 를 줘야할 수도 있고, inst[7:6] 를 줘야 할 수도 있고, 2 를 줘야할 수도 있음
-
-    // ADI, ORI, LHI 는 isnt[9:8]
-    // LWD, SWD 는 inst[9:8]
     assign write_addr = ((opcode == `JAL_OP) || ((opcode == `JRL_OP) && (func_code == `INST_FUNC_JRL))) ? 2 : 
                         (((opcode == `ADI_OP) || (opcode == `ORI_OP) || (opcode == `LHI_OP) || (opcode == `LWD_OP) || (opcode == `SWD_OP)) ? inst[9:8] : 
                         inst[7:6]);

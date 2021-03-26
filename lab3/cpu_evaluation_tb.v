@@ -49,7 +49,7 @@ module tb_cpu();
 	  			inputReady = 1;		  
       			#(`STABLE_TIME);			
 	  			inputReady = 0;
-      			loadedData = `WORD_SIZE'bz;	 
+      			loadedData = `WORD_SIZE'bz;	// 이래 해놔야, CPU 로부터 data 를 받을 수 있음
 	  		end else if (writeM == 1) begin
 				memory[address] = data;
 				#`WRITE_DELAY;

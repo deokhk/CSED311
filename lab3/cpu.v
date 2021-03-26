@@ -6,26 +6,23 @@
 `include "mux.v"
 `include "register_file.v"   
 
-module cpu (data,
-
-			ackOutput, inputReady,
-			reset_n, clk,
-
-			readM, writeM, address);
+module cpu (readM, writeM, address,
+			data,
+			ackOutput, inputReady, reset_n, clk);
 	inout [`WORD_SIZE-1:0] data;	
 
-	input ackOutput;								
-	input inputReady;								
-	input reset_n;									
+	input ackOutput; // 메모리에 데이터 다 썼다고 알려줌. 좀 있다 0 됨
+	input inputReady; // 메모리가 데이터 다 읽었다고 알려줌. 좀 있다 0 됨. 따라서 지금 data는 memory로부터 read한 값임.
+	input reset_n; // 0 일 때 reset. 1 이면 정상작동
 	input clk;
 
-	output readM;									
-	output writeM;
-	output [`WORD_SIZE-1:0] address;	
+	output reg readM; // 우리가 메모리로부터 데이터 읽고 싶을때 이거를 1로 해야 됨.	다시 꺼야 함.
+	output reg writeM; // 우리가 메모리에 데이터 쓰고 싶을때 이거를 1로 해야 됨. 다시 꺼야함.
+	output reg [`WORD_SIZE-1:0] address;	
 
 	reg [`WORD_SIZE-1:0] pc;
-
 	reg [`WORD_SIZE-1:0] one;
+	reg [`WORD_SIZE-1:0] instruction;
 
 	wire [`WORD_SIZE-1:0] pc_plus_1;
 	wire [`WORD_SIZE-1:0] pc_plus_imm;
@@ -62,10 +59,9 @@ module cpu (data,
 
 
 	initial begin
-		// TODO
-		pc;
-		pc_plus_1;
+		pc = 0;
 		one = 1;
+		instruction = 0;
 	end
 
 
@@ -90,7 +86,7 @@ module cpu (data,
         .out(write_data)
 	);
 	Mux2to1 mem_to_reg_mux(
-		.in0(alu_output), .in1(**************), .sel(mem_to_reg),
+		.in0(alu_output), .in1(data), .sel(mem_to_reg),
         .out(mem_to_reg_data)
 	);
 	Mux2to1 alu_src_mux(
@@ -121,7 +117,7 @@ module cpu (data,
 	);
 
 	InstDecoder inst_decoder (
-		.inst(*****************), 
+		.inst(instruction),
                     
 		.opcode(opcode), .in_addr1(in_addr1), .in_addr2(in_addr2),
 		.write_addr(write_addr), .func_code(func_code),
@@ -152,16 +148,48 @@ module cpu (data,
 	// 끝나면 writeM  = 0
 	// ackOutput == 0 이 되면, -> writeM  = 0
 	// read 는 input ready 
+		if(inputReady == 1) begin
+			instruction = data;
+			readM = 0;
+		end
 
+		if(ackOutput == 1) begin
+			writeM = 0;
+		end
 	end
 
 
 
 	// sequential logic 으로 pc, 다른 register 연산 수행
 	always @(posedge clk) begin
-
-		pc <= pc_next;
+		// pc <= pc_next;
+		address <= pc;
+		readM <= 1;
+		// 30 ns 흐르고, 다 읽어서 inputReady 1 됨
+		// instruction fetch 하고, 실행까지 완료됨
 
 	end
 
-endmodule							  																		  
+	always @(negedge clk) begin
+		// 50 ns 에서 시작
+		// LWD, SWD 이면, 시그널 보내
+
+		// 근데 LWD 거나 SWD 이면 시그널 보내는 거는
+		// Combinational logic 에서 가능한 거 아님???
+
+		if (opcode == `LWD_OP) begin
+			address <= alu_output;
+			readM <= 1;
+
+		end
+
+		if (opcode == `SWD_OP) begin
+			address <= alu_output;
+			writeM <= 1;
+		end
+
+		pc <= pc_next;
+	end
+
+
+endmodule
