@@ -7,7 +7,7 @@
 `define	NumBits	16
 
 
-module alu (alu_input_1, alu_input_2,
+module ALU (alu_input_1, alu_input_2,
 			opcode, func_code,
 			
 			alu_output, bcond);
@@ -72,38 +72,39 @@ module alu (alu_input_1, alu_input_2,
 
 	initial begin
 		alu_output = 0;
+		bcond = 0;
 	end
 
 	always @(alu_input_1 or alu_input_2 or opcode or func_code) begin
 		case (opcode)
 			`ALU_OP:begin
 				case (func_code)
-					`INST_FUNC_ADD:begin alu_output = add_out; end
-					`INST_FUNC_SUB:begin alu_output = sub_out; end
-					`INST_FUNC_AND:begin alu_output = and_out; end
-					`INST_FUNC_ORR:begin alu_output = orr_out; end
-					`INST_FUNC_NOT:begin alu_output = not_out; end
-					`INST_FUNC_TCP:begin alu_output = tcp_out; end
-					`INST_FUNC_SHL:begin alu_output = shl_out; end
-					`INST_FUNC_SHR:begin alu_output = shr_out; end
-					`INST_FUNC_JPR:begin alu_output = alu_input_1; end
-					`INST_FUNC_JRL:begin alu_output = alu_input_1; end
-					default:begin alu_output = 0; end
+					`INST_FUNC_ADD:begin alu_output = add_out; bcond = 0; end
+					`INST_FUNC_SUB:begin alu_output = sub_out; bcond = 0; end
+					`INST_FUNC_AND:begin alu_output = and_out; bcond = 0; end
+					`INST_FUNC_ORR:begin alu_output = orr_out; bcond = 0; end
+					`INST_FUNC_NOT:begin alu_output = not_out; bcond = 0; end
+					`INST_FUNC_TCP:begin alu_output = tcp_out; bcond = 0; end
+					`INST_FUNC_SHL:begin alu_output = shl_out; bcond = 0; end
+					`INST_FUNC_SHR:begin alu_output = shr_out; bcond = 0; end
+					`INST_FUNC_JPR:begin alu_output = alu_input_1; bcond = 0; end
+					`INST_FUNC_JRL:begin alu_output = alu_input_1; bcond = 0; end
+					default:begin alu_output = 0; bcond = 0; end
 				endcase
 			end
 
-			`BNE_OP:begin alu_output = (alu_input_1 != alu_input_2); end
-			`BEQ_OP:begin alu_output = (alu_input_1 == alu_input_2); end
-			`BGZ_OP:begin alu_output = (alu_input_1 > 0); end
-			`BLZ_OP:begin alu_output = (alu_input_1 < 0); end
+			`BNE_OP:begin alu_output = 0;  bcond = (alu_input_1 != alu_input_2); end
+			`BEQ_OP:begin alu_output = 0;  bcond = (alu_input_1 == alu_input_2); end
+			`BGZ_OP:begin alu_output = 0;  bcond = (alu_input_1 > 0); end
+			`BLZ_OP:begin alu_output = 0;  bcond = (alu_input_1 < 0); end
 
-			`ADI_OP:begin alu_output = add_out; end
-			`ORI_OP:begin alu_output = orr_out; end
-			`LHI_OP:begin alu_output = alu_input_2; end
-			`LWD_OP:begin alu_output = add_out; end
-			`SWD_OP:begin alu_output = add_out; end
+			`ADI_OP:begin alu_output = add_out; bcond = 0; end
+			`ORI_OP:begin alu_output = orr_out; bcond = 0; end
+			`LHI_OP:begin alu_output = alu_input_2; bcond = 0; end
+			`LWD_OP:begin alu_output = add_out; bcond = 0; end
+			`SWD_OP:begin alu_output = add_out; bcond = 0; end
 
-			default:begin alu_output = 0; end
+			default:begin alu_output = 0; bcond = 0; end
 		endcase
 	end
 

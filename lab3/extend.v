@@ -1,7 +1,7 @@
 `include "opcodes.v"
 
 
-module extend_delegator(pc, opcode,
+module ExtendDelegator(pc, opcode,
                         immediate_and_offset, target_address,
                         
                         extended_output);
@@ -63,7 +63,7 @@ module extend_delegator(pc, opcode,
 endmodule
 
 
-module sign_extend_8_to_16(in, out);
+module SignExtend8to16(in, out);
     input wire [7:0] in;
     output wire [15:0] out;
 
@@ -71,7 +71,7 @@ module sign_extend_8_to_16(in, out);
 endmodule
 
 
-module msb_zero_extend_8_to_16(in, out);
+module MsbZeroExtend8to16(in, out);
     input wire [7:0] in;
     output wire [15:0] out;
 
@@ -80,7 +80,7 @@ module msb_zero_extend_8_to_16(in, out);
 endmodule
 
 
-module lsb_zero_extend_8_to_16(in, out);
+module LsbZeroExtend8to16(in, out);
     input wire [7:0] in;
     output wire [15:0] out;
 
@@ -89,7 +89,7 @@ module lsb_zero_extend_8_to_16(in, out);
 endmodule
 
 
-module concat_pc_4_target_12(pc, target, out);
+module ConcatPc4Target12(pc, target, out);
     input wire [15:0] pc;
     input wire [11:0] target;
     output wire [15:0] out;

@@ -3,36 +3,32 @@
 `define	NumBits	16
 
 
-// input: 16bit instruction
-// output: 4bit opcode, 2bit rs, 2bit rt,
-//         2bit rd, 6bit function,
-//         8bit immediate, 12bit targetaddress
-module inst_decoder (inst, 
+module InstDecoder (inst, 
                     
-                    opcode, rs, rt, rd, func_code,
+                    opcode, in_addr1, in_addr2, write_addr, func_code,
                     immediate_and_offset, target_address);
     input wire [`NumBits-1:0] inst;
 
     output wire [3:0] opcode;
-    output wire [1:0] rs;
-    output wire [1:0] rt;
-    output wire [1:0] rd;
+    output wire [1:0] in_addr1;
+    output wire [1:0] in_addr2;
+    output wire [1:0] write_addr;
     output wire [5:0] func_code;
     output wire [7:0] immediate_and_offset;
     output wire [11:0] target_address;
 
 
     assign opcode = inst[`NumBits-1:12];
-    assign rs = inst[11:10];
-    assign rt = inst[9:8];
+    assign in_addr1 = inst[11:10];
+    assign in_addr2 = inst[9:8];
     // TODO: not rd ?
     // TODO: inst[9:8] 를 줘야할 수도 있고, inst[7:6] 를 줘야 할 수도 있고, 2 를 줘야할 수도 있음
 
     // ADI, ORI, LHI 는 isnt[9:8]
     // LWD, SWD 는 inst[9:8]
-    assign rd = ((opcode == `JAL_OP) || ((opcode == `JRL_OP) && (func_code == `INST_FUNC_JRL))) ? 2 : 
-                (((opcode == `ADI_OP) || (opcode == `ORI_OP) || (opcode == `LHI_OP) || (opcode == `LWD_OP) || (opcode == `SWD_OP)) ? inst[9:8] : 
-                inst[7:6]);
+    assign write_addr = ((opcode == `JAL_OP) || ((opcode == `JRL_OP) && (func_code == `INST_FUNC_JRL))) ? 2 : 
+                        (((opcode == `ADI_OP) || (opcode == `ORI_OP) || (opcode == `LHI_OP) || (opcode == `LWD_OP) || (opcode == `SWD_OP)) ? inst[9:8] : 
+                        inst[7:6]);
     assign func_code = inst[5:0];
     assign immediate_and_offset = inst[7:0];
     assign target_address = inst[11:0];

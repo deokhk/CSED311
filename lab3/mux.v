@@ -1,7 +1,7 @@
 `define	NumBits	16
 
 
-module mux_2_to_1 (in0, in1, sel,
+module Mux2to1 (in0, in1, sel,
                    out);
     input wire [`NumBits-1:0] in0;
     input wire [`NumBits-1:0] in1;
@@ -13,7 +13,7 @@ module mux_2_to_1 (in0, in1, sel,
 endmodule
 
 
-module mux_3_to_1 (in0, in1, in2, sel,
+module Mux3to1 (in0, in1, in2, sel,
                    out);
     input wire [`NumBits-1:0] in0;
     input wire [`NumBits-1:0] in1;
@@ -26,7 +26,7 @@ module mux_3_to_1 (in0, in1, in2, sel,
 endmodule
 
 
-module mux_4_to_1 (in0, in1, in2, in3, sel,
+module Mux4to1 (in0, in1, in2, in3, sel,
                    out);
     input wire [`NumBits-1:0] in0; // 00
     input wire [`NumBits-1:0] in1; // 01
