@@ -93,10 +93,13 @@ module alu (alu_input_1, alu_input_2,
 			end
 
 			`BNE_OP:begin alu_output = (alu_input_1 != alu_input_2); end
+			`BEQ_OP:begin alu_output = (alu_input_1 == alu_input_2); end
+			`BGZ_OP:begin alu_output = (alu_input_1 > 0); end
+			`BLZ_OP:begin alu_output = (alu_input_1 < 0); end
 
 			`ADI_OP:begin alu_output = add_out; end
 			`ORI_OP:begin alu_output = orr_out; end
-			`LHI_OP:begin alu_output = shl_out; end
+			`LHI_OP:begin alu_output = alu_input_2; end
 			`LWD_OP:begin alu_output = add_out; end
 			`SWD_OP:begin alu_output = add_out; end
 

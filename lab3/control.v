@@ -1,13 +1,14 @@
 `include "opcodes.v"
 
 
-module control (opcode,
+module control (opcode, func_code,
 
                 is_branch, is_jmp_jal, is_jpr_jrl,
                 mem_read, mem_to_reg, mem_write,
                 alu_src, reg_write, pc_to_reg);
 
     input wire [3:0] opcode;
+    input wire [5:0] func_code;
 
     output reg is_branch;
     output reg is_jmp_jal;
@@ -19,22 +20,80 @@ module control (opcode,
     output reg reg_write;
     output reg pc_to_reg;
 
-    always @(opcode) begin
-        case (opcode)
-            `ALU_OP:begin 
-                is_branch = 0;
-            end
 
-            `ALU_OP:begin 
-                is_branch = 0;
-            end
+    initial begin
+        is_branch = 0;
+        is_jmp_jal = 0;
+        is_jpr_jrl = 0;
+        mem_read = 0;
+        mem_to_reg = 0;
+        mem_write = 0;
+        alu_src = 0;
+        reg_write = 0;
+        pc_to_reg = 0;
+    end
 
-            `ALU_OP:begin 
-                is_branch = 0;
-            end
 
-            default:
-        endcase
+    always @(opcode or func_code) begin
+        if((opcode == `ALU_OP) || (opcode == `JPR_OP) || (opcode == `JRL_OP)) begin
+            if (func_code == `INST_FUNC_JPR) begin
+                is_branch = 0;
+                is_jmp_jal = 0;
+                is_jpr_jrl = 1;
+                mem_read = 0;
+                mem_to_reg = 0;
+                mem_write = 0;
+                alu_src = 0;
+                reg_write = 0;
+                pc_to_reg = 0;
+            end
+            else if (func_code == `INST_FUNC_JRL) begin
+                is_branch = 0;
+                is_jmp_jal = 0;
+                is_jpr_jrl = 1;
+                mem_read = 0;
+                mem_to_reg = 0;
+                mem_write = 0;
+                alu_src = 0;
+                reg_write = 1;
+                pc_to_reg = 1;
+            end
+            else begin
+                is_branch = 0;
+                is_jmp_jal = 0;
+                is_jpr_jrl = 0;
+                mem_read = 0;
+                mem_to_reg = 0;
+                mem_write = 0;
+                alu_src = 0;
+                reg_write = 1;
+                pc_to_reg = 0;
+            end
+        end
+        else if ((opcode == `ADI_OP) || (opcode == `ORI_OP)) begin
+            is_branch = 0;
+            is_jmp_jal = 0;
+            is_jpr_jrl = 0;
+            mem_read = 0;
+            mem_to_reg = 0;
+            mem_write = 0;
+            alu_src = 1;
+            reg_write = 1;
+            pc_to_reg = 0;
+        end
+        else if (opcode == `LHI_OP) begin
+            is_branch = 0;
+            is_jmp_jal = 0;
+            is_jpr_jrl = 0;
+            mem_read = 0;
+            mem_to_reg = 0;
+            mem_write = 0;
+            alu_src = 1;
+            reg_write = 1;
+            pc_to_reg = 0;
+        end
+        else begin
+        end
     end
 
 endmodule
