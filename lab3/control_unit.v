@@ -175,5 +175,3 @@ module PcMuxSelector(is_branch, is_jmp_jal, is_jpr_jrl, bcond,
     end
 
 endmodule
-
-

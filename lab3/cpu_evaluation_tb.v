@@ -16,16 +16,8 @@ module tb_cpu();
   	reg inputReady; 					// indicates that data is ready from the input port
   	reg reset_n;    									// active-low RESET signal
   	reg clk;        										// clock signal																																  
-
-	wire [`WORD_SIZE-1:0] pc;
-	wire [`WORD_SIZE-1:0] instruction;
-
-
-  	cpu UUT (readM, writeM, address, data,
-
-	  		 pc, instruction,
-	  
-	   ackOutput, inputReady, reset_n, clk);																				   
+  												
+  	cpu UUT (readM, writeM, address, data, ackOutput, inputReady, reset_n, clk);																				   
   																  														  										    
   	always #(`PERIOD1/2)clk = ~clk;  			// generates a clock (period = `PERIOD1)
 			  
@@ -42,9 +34,7 @@ module tb_cpu();
 																																							 
   	reg [`WORD_SIZE-1:0] memory [0:`MEMORY_SIZE-1];
   	reg [`WORD_SIZE-1:0] loadedData;  			// data loaded during a memory read  
-	
-	// 여기는 Memory 모듈로 생각해야함
-	// Memory 모듈 입장에서, 데이터를 읽으라고 인풋이 들어온 거임 -> output 으로 loadedData 뱉음
+																						  
   	assign data = (readM || inputReady) ? loadedData : `WORD_SIZE'bz;
   	always begin
     	loadedData = `WORD_SIZE'bz;
@@ -57,7 +47,7 @@ module tb_cpu();
 	  			inputReady = 1;		  
       			#(`STABLE_TIME);			
 	  			inputReady = 0;
-      			loadedData = `WORD_SIZE'bz;	// 이래 해놔야, CPU 로부터 data 를 받을 수 있음
+      			loadedData = `WORD_SIZE'bz;	 
 	  		end else if (writeM == 1) begin
 				memory[address] = data;
 				#`WRITE_DELAY;
@@ -101,7 +91,7 @@ module tb_cpu();
 		memory[27] = 16'h8107;	//	27: SWD $1, $0, 7
 		memory[28] = 16'h8208;	//	28: SWD $2, $0, 8
 		memory[29] = 16'h8309;	//	29: SWD $3, $0, 9
-		memory[30] = 0; // Data memory from here. All above are instruction memories.
+		memory[30] = 0;
 		memory[31] = 0;
 		memory[32] = 0;
 		memory[33] = 0;

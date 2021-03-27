@@ -6,12 +6,9 @@
 `include "mux.v"
 `include "register_file.v"   
 
+
 module cpu (readM, writeM, address,
 			data,
-
-			pc, instruction,
-
-
 			ackOutput, inputReady, reset_n, clk);
 	inout [`WORD_SIZE-1:0] data;
 	
@@ -24,9 +21,9 @@ module cpu (readM, writeM, address,
 	output reg writeM; // 우리가 메모리에 데이터 쓰고 싶을때 이거를 1로 해야 됨. 다시 꺼야함.
 	output reg [`WORD_SIZE-1:0] address;	
 
-	output reg [`WORD_SIZE-1:0] pc;
+	reg [`WORD_SIZE-1:0] pc;
 	reg [`WORD_SIZE-1:0] one;
-	output reg [`WORD_SIZE-1:0] instruction;
+	reg [`WORD_SIZE-1:0] instruction;
 	reg [`WORD_SIZE-1:0] mem_buffer;
 
 	wire [`WORD_SIZE-1:0] pc_plus_1;
@@ -152,37 +149,6 @@ module cpu (readM, writeM, address,
 	end
 
 
-	// // combinational logic
-	// always @(*) begin
-	// // 컨트롤 모듈에서, SWD 면 -> writeM = 1
-	// // 끝나면 writeM  = 0
-	// // ackOutput == 0 이 되면, -> writeM  = 0
-	// // read 는 input ready 
-	// 	if (inputReady == 1) begin
-	// 		if (opcode != `LWD_OP) begin
-	// 			instruction = data;
-	// 		end
-	// 		readM = 0;
-	// 	end
-	// 	else begin readM = 0; end
-
-	// 	if(ackOutput == 1) begin
-	// 		writeM = 0;
-	// 	end
-	// 	else begin writeM = 0; end
-
-	// 	if (opcode == `LWD_OP) begin
-	// 		address = alu_output;
-	// 		readM = 1;
-	// 	end
-
-	// 	if (opcode == `SWD_OP) begin
-	// 		address = alu_output;
-	// 		writeM = 1;
-	// 	end
-
-	// end
-
 	always @(posedge reset_n) begin
 		pc <= 0;
 		one <= 1;
@@ -197,7 +163,6 @@ module cpu (readM, writeM, address,
 
 	// sequential logic 으로 pc, 다른 register 연산 수행
 	always @(posedge clk) begin
-		// pc <= pc_next;
 		address <= pc;
 		readM <= 1;
 		wait(inputReady == 1);
@@ -216,13 +181,15 @@ module cpu (readM, writeM, address,
 			readM <= 1;
 			wait(inputReady == 1);
 			
-			mem_buffer <= data; // mem_to_reg 에 바로 꽂으면, register_file 에서 저장될 때 이미 zzz 로 되어있을 수도 있음
+			// mem_to_reg 에 바로 꽂으면, register_file 에서 저장될 때 이미 zzz 로 되어있을 수도 있음
+			mem_buffer <= data;
 			readM <= 0;
 		end
 
 		if (opcode == `SWD_OP) begin
 			address <= alu_output;
 			writeM <= 1;
+			
 			wait(ackOutput == 1);
 			writeM <= 0;
 		end

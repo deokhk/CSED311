@@ -22,7 +22,6 @@
 
 `define	JPR_OP	4'd15 // pc = rs
 `define	JRL_OP	4'd15 // reg[2] = pc; pc = rs;
-// TODO: JAL, JRL. pc+4 ? or pc ?
 
 // ALU Function Codes
 `define	FUNC_ADD	3'b000

@@ -38,4 +38,3 @@ output wire [`NumBits - 1 : 0] C;
 assign C=($signed(A) >>> 1);
 
 endmodule
-
