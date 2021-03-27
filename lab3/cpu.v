@@ -27,6 +27,7 @@ module cpu (readM, writeM, address,
 	output reg [`WORD_SIZE-1:0] pc;
 	reg [`WORD_SIZE-1:0] one;
 	output reg [`WORD_SIZE-1:0] instruction;
+	reg [`WORD_SIZE-1:0] mem_buffer;
 
 	wire [`WORD_SIZE-1:0] pc_plus_1;
 	wire [`WORD_SIZE-1:0] pc_plus_imm;
@@ -83,7 +84,7 @@ module cpu (readM, writeM, address,
         .out(write_data)
 	);
 	Mux2to1 mem_to_reg_mux(
-		.in0(alu_output), .in1(data), .sel(mem_to_reg),
+		.in0(alu_output), .in1(mem_buffer), .sel(mem_to_reg),
         .out(mem_to_reg_data)
 	);
 	Mux2to1 alu_src_mux(
@@ -143,51 +144,53 @@ module cpu (readM, writeM, address,
 	initial begin
 		pc = 0;
 		one = 1;
-		instruction = 0;
+		instruction = `WORD_SIZE'b0;
 		readM = 0;
 		writeM = 0;
-		address = 0;
+		address = `WORD_SIZE'b0;
+		mem_buffer = `WORD_SIZE'b0;
 	end
 
 
-	// combinational logic
-	always @(*) begin
-	// 컨트롤 모듈에서, SWD 면 -> writeM = 1
-	// 끝나면 writeM  = 0
-	// ackOutput == 0 이 되면, -> writeM  = 0
-	// read 는 input ready 
-		if (inputReady == 1) begin
-			if (opcode != `LWD_OP) begin
-				instruction = data;
-			end
-			readM = 0;
-		end
-		else begin readM = 0; end
+	// // combinational logic
+	// always @(*) begin
+	// // 컨트롤 모듈에서, SWD 면 -> writeM = 1
+	// // 끝나면 writeM  = 0
+	// // ackOutput == 0 이 되면, -> writeM  = 0
+	// // read 는 input ready 
+	// 	if (inputReady == 1) begin
+	// 		if (opcode != `LWD_OP) begin
+	// 			instruction = data;
+	// 		end
+	// 		readM = 0;
+	// 	end
+	// 	else begin readM = 0; end
 
-		if(ackOutput == 1) begin
-			writeM = 0;
-		end
-		else begin writeM = 0; end
+	// 	if(ackOutput == 1) begin
+	// 		writeM = 0;
+	// 	end
+	// 	else begin writeM = 0; end
 
-		if (opcode == `LWD_OP) begin
-			address = alu_output;
-			readM = 1;
-		end
+	// 	if (opcode == `LWD_OP) begin
+	// 		address = alu_output;
+	// 		readM = 1;
+	// 	end
 
-		if (opcode == `SWD_OP) begin
-			address = alu_output;
-			writeM = 1;
-		end
+	// 	if (opcode == `SWD_OP) begin
+	// 		address = alu_output;
+	// 		writeM = 1;
+	// 	end
 
-	end
+	// end
 
 	always @(posedge reset_n) begin
-			pc = 0;
-			one = 1;
-			instruction = 0;
-			readM = 0;
-			writeM = 0;
-			address = 0;
+		pc <= 0;
+		one <= 1;
+		instruction <= `WORD_SIZE'b0;
+		readM <= 0;
+		writeM <= 0;
+		address <= `WORD_SIZE'b0;
+		mem_buffer = `WORD_SIZE'b0;
 	end
 
 
@@ -197,30 +200,35 @@ module cpu (readM, writeM, address,
 		// pc <= pc_next;
 		address <= pc;
 		readM <= 1;
-		// 30 ns 흐르고, 다 읽어서 inputReady 1 됨
-		// instruction fetch 하고, 실행까지 완료됨
+		wait(inputReady == 1);
 
+		instruction <= data;
+		readM <= 0;
 	end
+
 
 	always @(negedge clk) begin
 		// 50 ns 에서 시작
 		// LWD, SWD 이면, 시그널 보내
 
-		// 근데 LWD 거나 SWD 이면 시그널 보내는 거는
-		// Combinational logic 에서 가능한 거 아님???
+		if (opcode == `LWD_OP) begin
+			address <= alu_output;
+			readM <= 1;
+			wait(inputReady == 1);
+			
+			mem_buffer <= data; // mem_to_reg 에 바로 꽂으면, register_file 에서 저장될 때 이미 zzz 로 되어있을 수도 있음
+			readM <= 0;
+		end
 
-		// if (opcode == `LWD_OP) begin
-		// 	address <= alu_output;
-		// 	readM <= 1;
+		if (opcode == `SWD_OP) begin
+			address <= alu_output;
+			writeM <= 1;
+			wait(ackOutput == 1);
+			writeM <= 0;
+		end
 
-		// end
-
-		// if (opcode == `SWD_OP) begin
-		// 	address <= alu_output;
-		// 	writeM <= 1;
-		// end
-
-		pc <= pc_next;
+		if (pc_mux_sel == 1) pc <= pc_next + 1;
+		else pc <= pc_next;
 	end
 
 
