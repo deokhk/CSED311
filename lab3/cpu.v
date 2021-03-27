@@ -8,6 +8,10 @@
 
 module cpu (readM, writeM, address,
 			data,
+
+			pc, instruction,
+
+
 			ackOutput, inputReady, reset_n, clk);
 	inout [`WORD_SIZE-1:0] data;
 	
@@ -20,9 +24,9 @@ module cpu (readM, writeM, address,
 	output reg writeM; // 우리가 메모리에 데이터 쓰고 싶을때 이거를 1로 해야 됨. 다시 꺼야함.
 	output reg [`WORD_SIZE-1:0] address;	
 
-	reg [`WORD_SIZE-1:0] pc;
+	output reg [`WORD_SIZE-1:0] pc;
 	reg [`WORD_SIZE-1:0] one;
-	reg [`WORD_SIZE-1:0] instruction;
+	output reg [`WORD_SIZE-1:0] instruction;
 
 	wire [`WORD_SIZE-1:0] pc_plus_1;
 	wire [`WORD_SIZE-1:0] pc_plus_imm;
@@ -175,15 +179,15 @@ module cpu (readM, writeM, address,
 			writeM = 1;
 		end
 
-		if (reset_n == 0) begin
+	end
+
+	always @(posedge reset_n) begin
 			pc = 0;
 			one = 1;
 			instruction = 0;
 			readM = 0;
 			writeM = 0;
 			address = 0;
-		end
-
 	end
 
 
