@@ -1,21 +1,30 @@
-    
+// read register 1: rs , read register 2: rt, write register: rd
 // Opcode
-`define   ALU_OP   4'd15
-`define   ADI_OP   4'd4
-`define   ORI_OP   4'd5
-`define   LHI_OP   4'd6
-`define   LWD_OP   4'd7
-`define   SWD_OP   4'd8
-`define   BNE_OP   4'd0
-`define   BEQ_OP   4'd1
-`define   BGZ_OP   4'd2
-`define   BLZ_OP   4'd3
-`define   JMP_OP   4'd9
-`define   JAL_OP   4'd10
-`define   JPR_OP   4'd15
-`define   JRL_OP   4'd15
-`define   HLT_OP   4'd15
-`define   WWD_OP   4'd15
+`define	ALU_OP	4'd15
+
+`define	ADI_OP	4'd4 // ADDI. rt = rs + imm
+`define	ORI_OP	4'd5 // rt = rs | imm
+`define	LHI_OP	4'd6 // rt = (imm << 8)
+
+`define	LWD_OP	4'd7 // rt = memory[rs + offset]
+`define	SWD_OP	4'd8 // memory[rs + offset] = rt
+
+`define	BNE_OP	4'd0 // if rs!=rt then pc=pc+offset else pc=pc+4
+`define	BEQ_OP	4'd1 // if rs=rt then pc=pc+offset else pc=pc+4
+`define BGZ_OP	4'd2 // if rs>0 then pc=pc+offset else pc=pc+4
+`define BLZ_OP	4'd3 // if rs<0 then pc=pc+offset else pc=pc+4
+
+// Extender 그대로 받음. PCMuxSelector == 2
+`define	JMP_OP	4'd9 // pc = {pc[15:12], target[11:0]}
+
+// Extender 그대로 받음. PCMuxSelector == 2
+`define JAL_OP	4'd10 // reg[2] = pc; pc = {pc[15:12], target[11:0]}
+
+`define	JPR_OP	4'd15 // pc = rs
+`define	JRL_OP	4'd15 // reg[2] = pc; pc = rs;
+
+`define   HLT_OP   4'd15 // End of the program
+`define   WWD_OP   4'd15 // outputport <- rs;
 
 // ALU Function Codes
 `define   FUNC_ADD   3'b000
@@ -43,3 +52,17 @@
 
 `define   WORD_SIZE   16         
 `define   NUM_REGS   4
+
+// micro state definition
+`define IF1 4'd0
+`define IF2 4'd1
+`define IF3 4'd2
+`define IF4 4'd3
+`define ID 4'd4
+`define EX1 4'd5
+`define EX2 4'd6
+`define MEM1 4'd7
+`define MEM2 4'd8
+`define MEM3 4'd9
+`define MEM4 4'd10
+`define WB 4'd11
