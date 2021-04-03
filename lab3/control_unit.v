@@ -34,7 +34,7 @@ module Control (opcode, func_code,
     end
 
 
-    always @(opcode or func_code) begin
+    always @(*) begin
         if((opcode == `ALU_OP) || (opcode == `JPR_OP) || (opcode == `JRL_OP)) begin
             if (func_code == `INST_FUNC_JPR) begin
                 is_branch = 0;

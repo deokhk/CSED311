@@ -75,7 +75,7 @@ module ALU (alu_input_1, alu_input_2,
 		bcond = 0;
 	end
 
-	always @(alu_input_1 or alu_input_2 or opcode or func_code) begin
+	always @(*) begin
 		case (opcode)
 			`ALU_OP:begin
 				case (func_code)

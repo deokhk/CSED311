@@ -19,16 +19,16 @@ module ExtendDelegator(pc, opcode,
 	wire [15:0] concat_pc_target_out;
 
 
-	sign_extend_8_to_16 sign_extend_8_to_16_instance (
+	SignExtend8to16 sign_extend_8_to_16_instance (
 		.in(immediate_and_offset), .out(sign_extend_out)
 	);
-	msb_zero_extend_8_to_16 msb_zero_extend_8_to_16_instance (
+	MsbZeroExtend8to16 msb_zero_extend_8_to_16_instance (
 		.in(immediate_and_offset), .out(msb_zero_extend_out)
 	);
-	lsb_zero_extend_8_to_16 lsb_zero_extend_8_to_16_instance (
+	LsbZeroExtend8to16 lsb_zero_extend_8_to_16_instance (
 		.in(immediate_and_offset), .out(lsb_zero_extend_out)
 	);
-	concat_pc_4_target_12 concat_pc_4_target_12_instance (
+	ConcatPc4Target12 concat_pc_4_target_12_instance (
 		.pc(pc), .target(target_address), 
 		.out(concat_pc_target_out)
 	);
