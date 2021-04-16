@@ -57,11 +57,17 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
 
     reg [3:0] state;
 
-    assign mem_read = (state == `IF1 || state == `IF2) ? 1 : (*****) ;
-    assign mem_to_reg = ;
-    assign mem_write = ;
-    assign reg_write = ;
-    assign alu_src_a = ;
+    assign mem_read = (state == `IF1) || ((opcode == `LWD_OP) && (state >= `MEM1) && (state <= `MEM4));
+    assign mem_to_reg = (opcode == `LWD_OP) && (state == `WB);
+    assign mem_write = ((opcode == `SWD_OP) && (state >= `MEM1) && (state <= `MEM4));
+    assign reg_write = (state == `WB);
+    
+    // alu_src_a, b 는 ID 에서 결정돼야함.
+
+    // EX1 에서는, PC + 4 를 계산해서, ALUOut 에 넣어둬야함
+    // EX1 에서는, ALUSrcA 는 PC 를 받아들여야 함. ALUSrcB는 4를 받아들어야 됨
+    // EX2에서 각 연산이 요구하는 operation을 수행함.
+    assign alu_src_a = ((state == `EX2) || ((state == `EX3) && (opcode >= `BNE_OP) && (opcode <= `BLZ_OP))) ? 0 : 1;
     assign [1:0] alu_src_b = ;
     assign i_or_d = (state == `IF1 || state == `IF2) ? 0 : (*****) ; // IF1, IF2 에서는 0 이 맞음. LD, SD 에서는 1 이 맞지. 평소에는? 생각해보자.
     assign ir_write = (state == `IF1 || state == `IF2) ? 1 : 0;
@@ -74,16 +80,13 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
 
     always @(posedge clk) begin
         case(state)
-            `IF1: begin
+            `IF1: begin // PC update 는 IF1 에서 하는 것.
                 state = `IF2;
             end
             `IF2: begin
                 state = `IF3;
             end
             `IF3: begin
-                state = `IF4;
-            end
-            `IF4: begin
                 if (opcode == `JAL_OP) begin
                     state = `EX1;
                 end
@@ -98,6 +101,9 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
                 state = `EX2;
             end
             `EX2: begin
+                state = `EX3;
+            end
+            `EX3: begin
                 if (opcode == `BNE_OP || opcode == `BEQ_OP || opcode == `BGZ_OP || opcode == `BLZ_OP) begin
                     state = `IF1;
                     // TODO: PVSWriteEn=1이 되어야 하는데, 이를 어떻게 처리해줄지 생각해볼것.

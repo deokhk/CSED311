@@ -6,17 +6,19 @@
 `define	NumBits	16
 
 
-module ALU (alu_input_1, alu_input_2,
+module ALU (alu_input_1, alu_input_2, pass_input_1, pass_input_2,
 			opcode, func_code,
 			
 			alu_result, overflow_flag, bcond);
 	input [`NumBits-1:0] alu_input_1;
 	input [`NumBits-1:0] alu_input_2;
-   input wire [3:0] opcode;
-   input wire [5:0] func_code;
+	input wire [3:0] opcode;
+	input wire [5:0] func_code;
+	input wire pass_input_1;
+	input wire pass_input_2;
 
 	output reg [`NumBits-1:0] alu_result;
-   output reg overflow_flag;
+    output reg overflow_flag;
 	output reg bcond;
 
 	wire [`NumBits - 1: 0] add_out;
@@ -100,6 +102,9 @@ module ALU (alu_input_1, alu_input_2,
 			`BEQ_OP:begin alu_result = 0;  bcond = (alu_input_1 == alu_input_2); overflow_flag = 0; end
 			`BGZ_OP:begin alu_result = 0;  bcond = (alu_input_1 > 0); overflow_flag = 0; end
 			`BLZ_OP:begin alu_result = 0;  bcond = (alu_input_1 < 0); overflow_flag = 0; end
+
+			`JMP_OP:begin alu_result = alu_input_2; bcond = 0; overflow_flag = 0; end
+			`JAL_OP:begin alu_result = (pass_input_1 ? alu_input_1 : (pass_input2 ? alu_input_2 : 0)); bcond = 0; overflow_flag = 0; end
 
 			`ADI_OP:begin alu_result = add_out; bcond = 0; overflow_flag = add_flag; end
 			`ORI_OP:begin alu_result = orr_out; bcond = 0; overflow_flag = 0; end
