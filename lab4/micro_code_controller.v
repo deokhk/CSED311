@@ -7,7 +7,7 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
                            alu_src_a, alu_src_b,
                            i_or_d, ir_write,
                            pc_source, pc_write, pc_write_not_cond,
-                           wwd, halt
+                           wwd, halt, pass_input_1, pass_input_2
                            );
 
     input wire [3:0] opcode;
@@ -55,6 +55,8 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
     output wire wwd;
     output wire halt;
 
+    output wire pass_input_1;
+    output wire pass_input_2;
     reg [3:0] state;
 
     assign mem_read = (state == `IF1) || ((opcode == `LWD_OP) && (state >= `MEM1) && (state <= `MEM4));
@@ -64,11 +66,18 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
     
     // alu_src_a, b 는 ID 에서 결정돼야함.
 
-    // EX1 에서는, PC + 4 를 계산해서, ALUOut 에 넣어둬야함
-    // EX1 에서는, ALUSrcA 는 PC 를 받아들여야 함. ALUSrcB는 4를 받아들어야 됨
-    // EX2에서 각 연산이 요구하는 operation을 수행함.
-    assign alu_src_a = ((state == `EX2) || ((state == `EX3) && (opcode >= `BNE_OP) && (opcode <= `BLZ_OP))) ? 0 : 1;
-    assign [1:0] alu_src_b = ;
+    // EX1 에서는, bcond 계산
+    // EX2 에서는, PC+1 계산
+    // EX3에서 각 연산이 요구하는 operation을 수행함.
+    //((state == `EX2) || ((state == `EX3) && (opcode >= `BNE_OP) && (opcode <= `BLZ_OP))) ? 0 : 1;
+    assign alu_src_a = (state == `EX1) || 
+                       ((state == `EX3) && (opcode >= `ADI_OP) && (opcode <= `SWD_OP)) || 
+                       ((state == `EX3) && (opcode == `ALU_OP)); 
+    assign [1:0] alu_src_b = ((state == `EX1) || ((state == `EX3) && (opcode == `ALU_OP)) ? 0 : ((state == `EX2) ? 1 : 2);
+    assign pass_input_1 = (opcode == `JAL_OP) && (state == `EX2);
+    assign pass_input_2 = (opcode == `JAL_OP) && (state == `EX3);
+
+
     assign i_or_d = (state == `IF1 || state == `IF2) ? 0 : (*****) ; // IF1, IF2 에서는 0 이 맞음. LD, SD 에서는 1 이 맞지. 평소에는? 생각해보자.
     assign ir_write = (state == `IF1 || state == `IF2) ? 1 : 0;
     assign pc_source = ;

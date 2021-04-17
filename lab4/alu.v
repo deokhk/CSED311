@@ -92,8 +92,8 @@ module ALU (alu_input_1, alu_input_2, pass_input_1, pass_input_2,
 					`INST_FUNC_TCP:begin alu_result = tcp_out; bcond = 0; overflow_flag = 0; end
 					`INST_FUNC_SHL:begin alu_result = shl_out; bcond = 0; overflow_flag = 0; end
 					`INST_FUNC_SHR:begin alu_result = shr_out; bcond = 0; overflow_flag = 0; end
-					`INST_FUNC_JPR:begin alu_result = alu_input_1; bcond = 0; overflow_flag = 0; end
-					`INST_FUNC_JRL:begin alu_result = alu_input_1; bcond = 0; overflow_flag = 0; end
+					`INST_FUNC_JPR:begin alu_result = alu_input_1; bcond = 0; overflow_flag = 0; end //
+					`INST_FUNC_JRL:begin alu_result = alu_input_1; bcond = 0; overflow_flag = 0; end //
 					default:begin alu_result = 0; bcond = 0; overflow_flag = 0; end
 				endcase
 			end
@@ -104,7 +104,7 @@ module ALU (alu_input_1, alu_input_2, pass_input_1, pass_input_2,
 			`BLZ_OP:begin alu_result = 0;  bcond = (alu_input_1 < 0); overflow_flag = 0; end
 
 			`JMP_OP:begin alu_result = alu_input_2; bcond = 0; overflow_flag = 0; end
-			`JAL_OP:begin alu_result = (pass_input_1 ? alu_input_1 : (pass_input2 ? alu_input_2 : 0)); bcond = 0; overflow_flag = 0; end
+			`JAL_OP:begin alu_result = (pass_input_1 ? alu_input_1 : (pass_input_2 ? alu_input_2 : 0)); bcond = 0; overflow_flag = 0; end
 
 			`ADI_OP:begin alu_result = add_out; bcond = 0; overflow_flag = add_flag; end
 			`ORI_OP:begin alu_result = orr_out; bcond = 0; overflow_flag = 0; end
