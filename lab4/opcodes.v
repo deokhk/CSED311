@@ -56,15 +56,15 @@
 `define   NUM_REGS   4
 
 // micro state definition
-`define IF1 4'd0
+`define IF1 4'd0 
 `define IF2 4'd1
 `define IF3 4'd2
 `define ID 4'd3
 `define EX1 4'd4 // 여기서 bcond 계산. bxx operation이 아닌경우에는 쓰레기값이 계산됨. 
-`define EX2 4'd5 // PC + 4 계산해서, ALUOut
-`define EX3 4'd6 // rs1 + rs2  or pc + imm 여기가 찐 계산
-`define EX4 4'd7 // Latch next_pc register
-`define MEM1 4'd8
-`define MEM2 4'd9
-`define MEM3 4'd10
+`define EX2 4'd5 // rs1 + rs2  or pc + imm 여기가 찐 계산
+`define EX3 4'd6 // PC + 4 계산해서, ALUOut
+`define MEM1 4'd7
+`define MEM2 4'd8
+`define MEM3 4'd9
+`define MEM4 4'd10
 `define WB 4'd11
