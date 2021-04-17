@@ -7,7 +7,9 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
                            alu_src_a, alu_src_b,
                            i_or_d, ir_write,
                            pc_source, pc_write, 
-                           wwd, halt, pass_input_1, pass_input_2
+                           wwd, halt, pass_input_1, pass_input_2,
+                           A_write_en, B_write_en
+
                            );
 
     input wire [3:0] opcode;
@@ -46,15 +48,19 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
     // 0 -> pass
     // 1 -> PCSource Mux 에서 오는 next pc 를, 무지성으로 pc <= pc_next;
     output wire pc_write;
-
-
     
     output wire wwd;
     output wire halt;
 
     output wire pass_input_1;
     output wire pass_input_2;
+
+    output wire A_write_en;
+    output wire B_write_en;
+
     reg [3:0] state;
+    // TODO: initialize states
+
 
     assign mem_read = (state == `IF2) || (state == `IF3) || ((opcode == `LWD_OP) && (state >= `MEM1) && (state <= `MEM3));
     assign mem_to_reg = (opcode == `LWD_OP) && (state == `WB);
@@ -78,8 +84,15 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
 
     // TODO: EX4 에서, next_pc = (output from ps_source_mux)
     // TODO: 각종 reg latch 들을, 특정 스테이지에서만 허용해줘야함.
-    // bcond reg, ALUout, next_pc reg -> 각 EX stage 마다, 적절히 시그널 만들어서 뿌려줘야하고
-    // A, B: ID stage 일때만, A_write_en, B_write_en 켜줌.
+    // bcond reg, ALUout, next_pc reg -> 각 EX state 마다, 적절히 시그널 만들어서 뿌려줘야하고
+    // A, B: ID state 일때만, A_write_en, B_write_en 켜줌.
+
+
+    // assign bcond_write_en = (state == `EX1);
+    // assign ALUout_write_en = (state == `EX2);
+    // assign next_pc_write_en = (state == `EX4);
+    assign A_write_en = (state == `ID);
+    assign B_write_en = (state == `ID);
 
 
     assign i_or_d = ((opcode == `LWD_OP) || (opcode == `SWD_OP)) && (state >= `MEM1) && (state <= `MEM3);
@@ -91,8 +104,8 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
                     || (opcode == `JMP_OP) || (opcode == `JAL_OP)
                     || ((opcode == `JPR_OP) && ((func_code == `INST_FUNC_JPR) || (func_code == `INST_FUNC_JRL)));
     assign pc_write = (state == `IF1); // next_pc 만들어서, IF1 일 때, pc = next_pc
-    assign wwd = ;
-    assign halt = ;
+    assign wwd = (opcode == `WWD_OP) && (func_code == `INST_FUNC_WWD) &&  (state == `EX1); // rs1 을 외부에 업데이트
+    assign halt = (opcode == `HLT_OP) && (func_code == `INST_FUNC_HLT);
     
 
     always @(posedge clk) begin
@@ -128,10 +141,10 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
                     state = `IF1;
                     // TODO: PVSWriteEn=1이 되어야 하는데, 이를 어떻게 처리해줄지 생각해볼것.
                 end
-                else if (opcode == `JMP_OP || opcode == `JPR_OP) begin
-                    state = `IF1;
+                else if (opcode == `JMP_OP) begin
+                    state = `IF1
                 end
-                else if (opcode == `WWD_OP || opcode == `HLT_OP) begin
+                else if ((opcode == `ALU_OP) && ((func_code == `INST_FUNC_JPR) || (func_code == `INST_FUNC_WWD) ||(func_code == `INST_FUNC_HLT)) begin
                     state = `IF1;
                 end
                 else if (opcode == `LWD_OP || opcode == `SWD_OP) begin
