@@ -5,7 +5,7 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
 
                            mem_read, mem_to_reg, mem_write, reg_write,
                            alu_src_a, alu_src_b,
-                           i_or_d, ir_write,
+                           i_or_d, ir_write, dr_write,
                            pc_source, pc_write, 
                            wwd, halt, pass_input_1, pass_input_2,
                            A_write_en, B_write_en,
@@ -29,6 +29,7 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
 
     output wire i_or_d; 
     output wire ir_write;
+    output wire dr_write;
 
     output wire pc_source;
     output wire pc_write;
@@ -73,9 +74,9 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
       ((opcode == `JRL_OP) && (func_code == `INST_FUNC_JRL))) ? `ADI_OP : opcode;
 
 
-    assign mem_read = (state == `IF2) || (state == `IF3) || ((opcode == `LWD_OP) && (state >= `MEM1) && (state <= `MEM3));
+    assign mem_read = (state == `IF2) || (state == `IF3) || ((opcode == `LWD_OP) && (state >= `MEM1) && (state <= `MEM4));
     assign mem_to_reg = (opcode == `LWD_OP) && (state == `WB);
-    assign mem_write = ((opcode == `SWD_OP) && (state >= `MEM1) && (state <= `MEM3));
+    assign mem_write = ((opcode == `SWD_OP) && (state >= `MEM1) && (state <= `MEM4));
     assign reg_write = (state == `WB);
     
     // alu_src_a, b 는 ID 에서 결정돼야함.
@@ -107,8 +108,9 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
     assign B_write_en = (state == `ID);
 
 
-    assign i_or_d = ((opcode == `LWD_OP) || (opcode == `SWD_OP)) && (state >= `MEM1) && (state <= `MEM3);
+    assign i_or_d = ((opcode == `LWD_OP) || (opcode == `SWD_OP)) && (state >= `MEM1) && (state <= `MEM4);
     assign ir_write = (state == `IF2) || (state == `IF3);
+    assign dr_write = (opcode == `LWD_OP) && (state >= `MEM1) && (state <= `MEM4);
 
     // pcmuxselector 가 bcond 랑 함께 처리해줄 거야
     // TODO: bcond reg 만들어서, EX1 의 결과만 쓰도록 해줘야 함.
