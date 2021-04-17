@@ -10,7 +10,8 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
                            wwd, halt, pass_input_1, pass_input_2,
                            A_write_en, B_write_en,
                            bcond_write_en, aluout_write_en, next_pc_write_en,
-                           alu_opcode, wb_sel
+                           alu_opcode, wb_sel,
+                           num_inst
 
                            );
 
@@ -48,9 +49,9 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
 
     output wire alu_opcode;
     output wire wb_sel;
+    output reg [`WORD_SIZE-1:0] num_inst;
 
     reg [3:0] state;
-    reg [`WORD_SIZE-1:0] num_inst;
 
 
 	initial begin

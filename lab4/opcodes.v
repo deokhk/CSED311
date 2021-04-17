@@ -19,7 +19,7 @@
 
 // Extender 그대로 받음. PCMuxSelector == 2
 
-// ALUOout 에 pc + 0. ALUresult = extend_delegator (aluinput1 은 무시됨)
+// ALUout 에 pc + 0. ALUresult = extend_delegator (aluinput1 은 무시됨)
 `define JAL_OP	4'd10 // reg[2] = pc; pc = {pc[15:12], target[11:0]}
 
 `define	JPR_OP	4'd15 // pc = rs
