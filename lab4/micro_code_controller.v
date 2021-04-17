@@ -6,7 +6,7 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
                            mem_read, mem_to_reg, mem_write, reg_write,
                            alu_src_a, alu_src_b,
                            i_or_d, ir_write,
-                           pc_source, pc_write, pc_write_not_cond,
+                           pc_source, pc_write, 
                            wwd, halt, pass_input_1, pass_input_2
                            );
 
@@ -47,9 +47,6 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
     // 1 -> PCSource Mux 에서 오는 next pc 를, 무지성으로 pc <= pc_next;
     output wire pc_write;
 
-    // 0 -> pass
-    // 1 -> bcond가 0일때에만 pc <= pc_next (from pc source mux);
-    output wire pc_write_not_cond;
 
     
     output wire wwd;
@@ -59,9 +56,9 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
     output wire pass_input_2;
     reg [3:0] state;
 
-    assign mem_read = (state == `IF1) || ((opcode == `LWD_OP) && (state >= `MEM1) && (state <= `MEM4));
+    assign mem_read = (state == `IF2) || (state == `IF3) || ((opcode == `LWD_OP) && (state >= `MEM1) && (state <= `MEM3));
     assign mem_to_reg = (opcode == `LWD_OP) && (state == `WB);
-    assign mem_write = ((opcode == `SWD_OP) && (state >= `MEM1) && (state <= `MEM4));
+    assign mem_write = ((opcode == `SWD_OP) && (state >= `MEM1) && (state <= `MEM3));
     assign reg_write = (state == `WB);
     
     // alu_src_a, b 는 ID 에서 결정돼야함.
@@ -71,18 +68,29 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
     // EX3에서 각 연산이 요구하는 operation을 수행함.
     //((state == `EX2) || ((state == `EX3) && (opcode >= `BNE_OP) && (opcode <= `BLZ_OP))) ? 0 : 1;
     assign alu_src_a = (state == `EX1) || 
-                       ((state == `EX3) && (opcode >= `ADI_OP) && (opcode <= `SWD_OP)) || 
-                       ((state == `EX3) && (opcode == `ALU_OP)); 
-    assign [1:0] alu_src_b = ((state == `EX1) || ((state == `EX3) && (opcode == `ALU_OP)) ? 0 : ((state == `EX2) ? 1 : 2);
+                       ((state >= `EX3) && (opcode >= `ADI_OP) && (opcode <= `SWD_OP)) || 
+                       ((state >= `EX3) && (opcode == `ALU_OP));
+    assign [1:0] alu_src_b = ((state == `EX1) || ((state >= `EX3) && (opcode == `ALU_OP))) ? 0
+                            : ((state == `EX2) ? 1
+                            : 2);
     assign pass_input_1 = (opcode == `JAL_OP) && (state == `EX2);
-    assign pass_input_2 = (opcode == `JAL_OP) && (state == `EX3);
+    assign pass_input_2 = (opcode == `JAL_OP) && (state >= `EX3);
+
+    // TODO: EX4 에서, next_pc = (output from ps_source_mux)
+    // TODO: 각종 reg latch 들을, 특정 스테이지에서만 허용해줘야함.
+    // bcond reg, ALUout, next_pc reg -> 각 EX stage 마다, 적절히 시그널 만들어서 뿌려줘야하고
+    // A, B: ID stage 일때만, A_write_en, B_write_en 켜줌.
 
 
-    assign i_or_d = (state == `IF1 || state == `IF2) ? 0 : (*****) ; // IF1, IF2 에서는 0 이 맞음. LD, SD 에서는 1 이 맞지. 평소에는? 생각해보자.
-    assign ir_write = (state == `IF1 || state == `IF2) ? 1 : 0;
-    assign pc_source = ;
-    assign pc_write = ;
-    assign pc_write_not_cond = ;
+    assign i_or_d = ((opcode == `LWD_OP) || (opcode == `SWD_OP)) && (state >= `MEM1) && (state <= `MEM3);
+    assign ir_write = (state == `IF2) || (state == `IF3);
+
+    // pcmuxselector 가 bcond 랑 함께 처리해줄 거야
+    // TODO: bcond reg 만들어서, EX1 의 결과만 쓰도록 해줘야 함.
+    assign pc_source = ((opcode >= `BNE_OP) && (opcode <= `BLZ_OP))
+                    || (opcode == `JMP_OP) || (opcode == `JAL_OP)
+                    || ((opcode == `JPR_OP) && ((func_code == `INST_FUNC_JPR) || (func_code == `INST_FUNC_JRL)));
+    assign pc_write = (state == `IF1); // next_pc 만들어서, IF1 일 때, pc = next_pc
     assign wwd = ;
     assign halt = ;
     
@@ -113,6 +121,9 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
                 state = `EX3;
             end
             `EX3: begin
+                state = `EX4;
+            end
+            `EX4: begin
                 if (opcode == `BNE_OP || opcode == `BEQ_OP || opcode == `BGZ_OP || opcode == `BLZ_OP) begin
                     state = `IF1;
                     // TODO: PVSWriteEn=1이 되어야 하는데, 이를 어떻게 처리해줄지 생각해볼것.
@@ -137,9 +148,6 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
                 state = `MEM3;
             end
             `MEM3: begin
-                state = `MEM4;
-            end
-            `MEM4: begin
                 if (opcode == `LWD_OP) begin
                     state = `WB;
                 end
@@ -157,3 +165,21 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
 
 
 endmodule
+
+
+module PCMuxSelector(pc_source, bcond, opcode,
+                     
+                     pc_mux_sel);
+    input wire pc_source;
+    input wire bcond;
+    input wire opcode;
+
+    output wire pc_mux_sel;
+
+    // not branch -> only pcsource
+    // branch -> pcsource && bcond
+    assign pc_mux_sel = ((opcode >= `opcode) && (opcode <= `BLZ_OP)) ? (pc_source && bcond) : pc_source;
+
+endmodule
+
+
