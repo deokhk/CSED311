@@ -19,30 +19,8 @@ module cpu_TB();
 	wire [`WORD_SIZE-1:0] output_port;	// this will be used for a "WWD" instruction
 	wire is_halted;				// set if the cpu is halted
 
-
-	wire [3:0] state;
-
-	wire [`WORD_SIZE-1:0] pc;
-	wire [`WORD_SIZE-1:0] next_pc_reg;
-	wire [`WORD_SIZE-1:0] inst_reg;
-	wire [`WORD_SIZE-1:0] A_reg;
-    wire [3:0] opcode;
-    wire [5:0] func_code;
-	wire [15:0] regfile_regs [3:0];
-	wire [15:0] ALUOut_reg;
-	wire [15:0] alu_result;
-	wire [15:0] wb_out;
-	wire [15:0] wb_out_reg;
-
-
 	// instantiate the unit under test
-	cpu UUT (clk, reset_n, readM, writeM, address, data, num_inst, output_port, is_halted,
-	
-
-			state, pc, next_pc_reg, inst_reg, A_reg, opcode, func_code, regfile_regs, ALUOut_reg, alu_result,
-			wb_out, wb_out_reg
-	
-	);
+	cpu UUT (clk, reset_n, readM, writeM, address, data, num_inst, output_port, is_halted);
 	memory NUUT(!clk, reset_n, readM, writeM, address, data);		   
 
 	// initialize inputs
@@ -108,7 +86,7 @@ module cpu_TB();
 		TestID[40] <= "14-1";	TestNumInst[40] <= 16'h0055;	TestAns[40] <= 16'hFFFF;	TestPassed[40] <= 1'bx;
 		TestID[41] <= "14-2";	TestNumInst[41] <= 16'h0057;	TestAns[41] <= 16'h0001;	TestPassed[41] <= 1'bx;
 		TestID[42] <= "15-1";	TestNumInst[42] <= 16'h005a;	TestAns[42] <= 16'hFFFF;	TestPassed[42] <= 1'bx;
-		TestID[43] <= "15-2";	TestNumInst[43] <= 16'h005c;	TestAns[43] <= 16'h0001;	TestPassed[43] <= 1'bx; // memory[16'h80] <= 16'hf41c; // R Type
+		TestID[43] <= "15-2";	TestNumInst[43] <= 16'h005c;	TestAns[43] <= 16'h0001;	TestPassed[43] <= 1'bx;
 		TestID[44] <= "16-1";	TestNumInst[44] <= 16'h005f;	TestAns[44] <= 16'hFFFF;	TestPassed[44] <= 1'bx;
 		TestID[45] <= "16-2";	TestNumInst[45] <= 16'h0061;	TestAns[45] <= 16'h0001;	TestPassed[45] <= 1'bx;
 		TestID[46] <= "17-1";	TestNumInst[46] <= 16'h0064;	TestAns[46] <= 16'hFFFF;	TestPassed[46] <= 1'bx;

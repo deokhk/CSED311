@@ -12,10 +12,7 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
                            bcond_write_en, aluout_write_en, next_pc_reg_write_en,
                            wb_out_reg_write_en,
                            alu_opcode, wb_sel,
-                           num_inst,
-
-
-                           state
+                           num_inst
 
                            );
 
@@ -56,7 +53,7 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
     output wire wb_sel;
     output reg [`WORD_SIZE-1:0] num_inst;
 
-    output reg [3:0] state;
+    reg [3:0] state;
 
 
 	initial begin
