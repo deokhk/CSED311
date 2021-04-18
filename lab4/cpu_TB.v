@@ -30,14 +30,17 @@ module cpu_TB();
     wire [5:0] func_code;
 	wire [15:0] regfile_regs [3:0];
 	wire [15:0] ALUOut_reg;
+	wire [15:0] alu_result;
+	wire [15:0] wb_out;
+	wire [15:0] wb_out_reg;
 
 
 	// instantiate the unit under test
 	cpu UUT (clk, reset_n, readM, writeM, address, data, num_inst, output_port, is_halted,
 	
 
-			state, pc, next_pc_reg, inst_reg, A_reg, opcode, func_code, regfile_regs, ALUOut_reg
-	
+			state, pc, next_pc_reg, inst_reg, A_reg, opcode, func_code, regfile_regs, ALUOut_reg, alu_result,
+			wb_out, wb_out_reg
 	
 	);
 	memory NUUT(!clk, reset_n, readM, writeM, address, data);		   

@@ -184,8 +184,8 @@ module memory(clk, reset_n, read_m, write_m, address, data);
 				memory[16'h9a] <= 16'h3801; // BLZ
 				memory[16'h9b] <= 16'h909d; // JMP
 				memory[16'h9c] <= 16'hf01d; // R Type
-				memory[16'h9d] <= 16'hf41c; // R Type
-				memory[16'h9e] <= 16'ha0af; // JAL
+				memory[16'h9d] <= 16'hf41c; // R Type WWD
+				memory[16'h9e] <= 16'ha0af; // JAL ****************
 				memory[16'h9f] <= 16'hf01c; // R Type
 				memory[16'ha0] <= 16'ha0ae; // JAL
 				memory[16'ha1] <= 16'hf01d; // R Type

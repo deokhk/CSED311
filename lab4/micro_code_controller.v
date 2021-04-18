@@ -10,6 +10,7 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
                            wwd, halt, pass_input_1, pass_input_2,
                            A_write_en, B_write_en,
                            bcond_write_en, aluout_write_en, next_pc_reg_write_en,
+                           wb_out_reg_write_en,
                            alu_opcode, wb_sel,
                            num_inst,
 
@@ -49,6 +50,7 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
     output wire bcond_write_en;
     output wire aluout_write_en;
     output wire next_pc_reg_write_en;
+    output wire wb_out_reg_write_en;
 
     output wire [3:0] alu_opcode;
     output wire wb_sel;
@@ -107,6 +109,7 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
     assign bcond_write_en = (state == `EX1);
     assign aluout_write_en = (state == `EX2);
     assign next_pc_reg_write_en = (state == `EX3);
+    assign wb_out_reg_write_en = (state == `EX3);
 
     assign A_write_en = (state == `ID);
     assign B_write_en = (state == `ID);

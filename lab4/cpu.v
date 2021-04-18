@@ -13,7 +13,9 @@ module cpu(clk, reset_n, read_m, write_m, address, data, num_inst, output_port, 
 
 
 
-			state, pc, next_pc_reg, inst_reg, A_reg, opcode, func_code, regfile_regs, ALUOut_reg
+			state, pc, next_pc_reg, inst_reg, A_reg, opcode, func_code, regfile_regs, ALUOut_reg, alu_result,
+			wb_out,
+			wb_out_reg
 );
 	input clk;
 	input reset_n;
@@ -63,12 +65,12 @@ module cpu(clk, reset_n, read_m, write_m, address, data, num_inst, output_port, 
 	// ALU
 	wire [15:0] alu_src_a_out;
 	wire [15:0] alu_src_b_out;
-	wire [15:0] alu_result;
+	output wire [15:0] alu_result;
 	wire overflow_flag;
 	wire bcond;
 	
 	// WB MUX
-	wire [15:0] wb_out;
+	output wire [15:0] wb_out;
 
 	// next pc MUX
 	wire [15:0] next_pc_out;
@@ -101,6 +103,7 @@ module cpu(clk, reset_n, read_m, write_m, address, data, num_inst, output_port, 
     wire bcond_write_en;
     wire aluout_write_en;
     wire next_pc_reg_write_en;
+    wire wb_out_reg_write_en;
 
     wire [3:0] alu_opcode;
     wire wb_sel;
@@ -117,7 +120,7 @@ module cpu(clk, reset_n, read_m, write_m, address, data, num_inst, output_port, 
 	reg [`WORD_SIZE-1:0] B_reg;
 	output reg [`WORD_SIZE-1:0] ALUOut_reg;
 	reg bcond_reg;
-
+	output reg [`WORD_SIZE-1:0] wb_out_reg;
 
     initial begin
 		pc = 0;
@@ -136,12 +139,12 @@ module cpu(clk, reset_n, read_m, write_m, address, data, num_inst, output_port, 
 	// TODO: mem_read, mem_write, num_inst assign
 
 	mux2_1 i_or_d_mux (
-		.sel(i_or_d), .i1(pc), .i2(wb_out),
+		.sel(i_or_d), .i1(pc), .i2(wb_out_reg),
 		
 		.o(i_or_d_out)
 	);
 	mux2_1 mem_to_reg_mux (
-		.sel(mem_to_reg), .i1(wb_out), .i2(mem_data_reg),
+		.sel(mem_to_reg), .i1(wb_out_reg), .i2(mem_data_reg),
 		
 		.o(write_data)
 	);
@@ -183,7 +186,7 @@ module cpu(clk, reset_n, read_m, write_m, address, data, num_inst, output_port, 
 		.pc_source(pc_source), .pc_write(pc_write), 
 		.wwd(wwd), .halt(halt), .pass_input_1(pass_input_1), .pass_input_2(pass_input_2),
 		.A_write_en(A_write_en), .B_write_en(B_write_en),
-		.bcond_write_en(bcond_write_en), .aluout_write_en(aluout_write_en), .next_pc_reg_write_en(next_pc_reg_write_en),
+		.bcond_write_en(bcond_write_en), .aluout_write_en(aluout_write_en), .next_pc_reg_write_en(next_pc_reg_write_en), .wb_out_reg_write_en(wb_out_reg_write_en),
 		.alu_opcode(alu_opcode), .wb_sel(wb_sel),
 		.num_inst(num_inst_from_micro_controller),
 
@@ -273,6 +276,13 @@ module cpu(clk, reset_n, read_m, write_m, address, data, num_inst, output_port, 
 			pc <= next_pc_reg;
 		end
 	end
+
+	always @(posedge clk) begin
+		if (wb_out_reg_write_en == 1) begin
+			wb_out_reg <= wb_out;
+		end
+	end
+
 
 	always @(posedge clk) begin
 		if (wwd == 1) begin
