@@ -9,7 +9,7 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
                            pc_source, pc_write, 
                            wwd, halt, pass_input_1, pass_input_2,
                            A_write_en, B_write_en,
-                           bcond_write_en, aluout_write_en, next_pc_write_en,
+                           bcond_write_en, aluout_write_en, next_pc_reg_write_en,
                            alu_opcode, wb_sel,
                            num_inst
 
@@ -45,7 +45,7 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
     output wire B_write_en;
     output wire bcond_write_en;
     output wire aluout_write_en;
-    output wire next_pc_write_en;
+    output wire next_pc_reg_write_en;
 
     output wire alu_opcode;
     output wire wb_sel;
@@ -103,7 +103,7 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
     // TODO: CPU 에서 어케 업데이트 할지는, always (bcond) 이런 거로 ㄱㄱ
     assign bcond_write_en = (state == `EX1);
     assign aluout_write_en = (state == `EX2);
-    assign next_pc_write_en = (state == `EX3);
+    assign next_pc_reg_write_en = (state == `EX3);
 
     assign A_write_en = (state == `ID);
     assign B_write_en = (state == `ID);
@@ -204,7 +204,7 @@ module PCMuxSelector(pc_source, bcond, opcode,
 
     // not branch -> only pcsource
     // branch -> pcsource && bcond
-    assign pc_mux_sel = ((opcode >= `opcode) && (opcode <= `BLZ_OP)) ? (pc_source && bcond) : pc_source;
+    assign pc_mux_sel = ((opcode >= `BNE_OP) && (opcode <= `BLZ_OP)) ? (pc_source && bcond) : pc_source;
 
 endmodule
 

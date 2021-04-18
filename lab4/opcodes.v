@@ -19,7 +19,7 @@
 
 // Extender 그대로 받음. PCMuxSelector == 2
 
-// ALUout 에 pc + 0. ALUresult = extend_delegator (aluinput1 은 무시됨)
+// ALUout 에 pc + 0. alu_result = extend_delegator (aluinput1 은 무시됨)
 `define JAL_OP	4'd10 // reg[2] = pc; pc = {pc[15:12], target[11:0]}
 
 `define	JPR_OP	4'd15 // pc = rs
@@ -62,7 +62,7 @@
 `define ID 4'd3
 `define EX1 4'd4 // 여기서 bcond 계산. bxx operation이 아닌경우에는 쓰레기값이 계산됨. 
 `define EX2 4'd5 // rs1 + rs2  or pc + imm 여기가 찐 계산
-`define EX3 4'd6 // PC + 4 계산해서, ALUOut
+`define EX3 4'd6 // PC + 4 계산해서, alu_result
 `define MEM1 4'd7
 `define MEM2 4'd8
 `define MEM3 4'd9
