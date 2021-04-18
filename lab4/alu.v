@@ -98,10 +98,10 @@ module ALU (alu_input_1, alu_input_2, pass_input_1, pass_input_2,
 				endcase
 			end
 
-			`BNE_OP:begin alu_result = 0;  bcond = (alu_input_1 != alu_input_2); overflow_flag = 0; end
-			`BEQ_OP:begin alu_result = 0;  bcond = (alu_input_1 == alu_input_2); overflow_flag = 0; end
-			`BGZ_OP:begin alu_result = 0;  bcond = (alu_input_1 > 0); overflow_flag = 0; end
-			`BLZ_OP:begin alu_result = 0;  bcond = (alu_input_1 < 0); overflow_flag = 0; end
+			`BNE_OP:begin alu_result = add_out;  bcond = (alu_input_1 != alu_input_2); overflow_flag = 0; end
+			`BEQ_OP:begin alu_result = add_out;  bcond = (alu_input_1 == alu_input_2); overflow_flag = 0; end
+			`BGZ_OP:begin alu_result = add_out;  bcond = (alu_input_1 > 0); overflow_flag = 0; end
+			`BLZ_OP:begin alu_result = add_out;  bcond = (alu_input_1 < 0); overflow_flag = 0; end
 
 			`JMP_OP:begin alu_result = alu_input_2; bcond = 0; overflow_flag = 0; end
 			`JAL_OP:begin alu_result = (pass_input_1 ? alu_input_1 : (pass_input_2 ? alu_input_2 : 0)); bcond = 0; overflow_flag = 0; end

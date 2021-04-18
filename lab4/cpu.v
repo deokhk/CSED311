@@ -13,7 +13,7 @@ module cpu(clk, reset_n, read_m, write_m, address, data, num_inst, output_port, 
 
 
 
-			state, pc, next_pc_reg, inst_reg, A_reg, opcode, func_code, regfile_regs
+			state, pc, next_pc_reg, inst_reg, A_reg, opcode, func_code, regfile_regs, ALUOut_reg
 );
 	input clk;
 	input reset_n;
@@ -115,7 +115,7 @@ module cpu(clk, reset_n, read_m, write_m, address, data, num_inst, output_port, 
 	reg [`WORD_SIZE-1:0] mem_data_reg;
 	output reg [`WORD_SIZE-1:0] A_reg;
 	reg [`WORD_SIZE-1:0] B_reg;
-	reg [`WORD_SIZE-1:0] ALUOut_reg;
+	output reg [`WORD_SIZE-1:0] ALUOut_reg;
 	reg bcond_reg;
 
 
@@ -258,7 +258,13 @@ module cpu(clk, reset_n, read_m, write_m, address, data, num_inst, output_port, 
 
 	always @(posedge clk) begin
 		if (next_pc_reg_write_en == 1) begin
-			next_pc_reg <= next_pc_out;
+			if ((opcode >= `BNE_OP) && (opcode <= `BLZ_OP) && (bcond_reg == 1)) begin
+				next_pc_reg <= next_pc_out + 1;
+			end
+			else begin
+				next_pc_reg <= next_pc_out;
+			end
+			// next_pc_reg <= next_pc_out;
 		end
 	end
 

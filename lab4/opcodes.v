@@ -62,7 +62,7 @@
 `define ID 4'd3
 `define EX1 4'd4 // 여기서 bcond 계산. bxx operation이 아닌경우에는 쓰레기값이 계산됨. 
 `define EX2 4'd5 // rs1 + rs2  or pc + imm 여기가 찐 계산
-`define EX3 4'd6 // PC + 4 계산해서, alu_result
+`define EX3 4'd6 // PC + 1 계산해서, alu_result
 `define MEM1 4'd7
 `define MEM2 4'd8
 `define MEM3 4'd9
