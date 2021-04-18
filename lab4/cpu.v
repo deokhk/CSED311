@@ -256,7 +256,12 @@ module cpu(clk, reset_n, read_m, write_m, address, data, num_inst, output_port, 
 
 	always @(posedge clk) begin
 		if (wb_out_reg_write_en == 1) begin
-			wb_out_reg <= wb_out;
+			if (opcode == `JAL_OP || (opcode == `JRL_OP && func_code == `INST_FUNC_JPR)) begin
+				wb_out_reg <= wb_out + 1;
+			end
+			else begin
+				wb_out_reg <= wb_out;
+			end
 		end
 	end
 
