@@ -36,7 +36,7 @@ module ExtendDelegator(pc, opcode,
     assign extended_output = (opcode == `ADI_OP || opcode == `LWD_OP || opcode == `SWD_OP || 
                               opcode == `BNE_OP || opcode == `BEQ_OP || opcode == `BGZ_OP || 
                               opcode == `BLZ_OP || opcode == `JMP_OP || opcode == `JAL_OP) ? sign_extend_out :
-                             (opcode == `ORI_OP ? msb_zero_extend_out : (opcode == `LHI_OP ? lsb_zero_extend_out : 0))
+                             (opcode == `ORI_OP ? msb_zero_extend_out : (opcode == `LHI_OP ? lsb_zero_extend_out : 0));
                             
 endmodule
 

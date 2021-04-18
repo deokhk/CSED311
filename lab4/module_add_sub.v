@@ -1,4 +1,3 @@
-`include "alu_func.v"
 
 `define data_width 16
 

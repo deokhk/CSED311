@@ -21,9 +21,6 @@ module RegisterFile(in_addr1, in_addr2,
         registers[1] = 0;
         registers[2] = 0;
         registers[3] = 0;
-
-        reg_data1 = 0;
-        reg_data2 = 0;
     end
 
     assign reg_data1 = registers[in_addr1];

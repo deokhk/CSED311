@@ -89,7 +89,7 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
     assign alu_src_a = (state == `EX1) || 
                        ((state == `EX2) && (opcode >= `ADI_OP) && (opcode <= `SWD_OP)) || 
                        ((state == `EX2) && (opcode == `ALU_OP));
-    assign [1:0] alu_src_b = ((state == `EX1) || ((state == `EX2) && (opcode == `ALU_OP))) ? 0
+    assign alu_src_b = ((state == `EX1) || ((state == `EX2) && (opcode == `ALU_OP))) ? 0
                             : ((state == `EX3) ? 1
                             : 2);
     assign pass_input_1 = (opcode == `JAL_OP) && (state == `EX3);
@@ -155,9 +155,9 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
                     state = `IF1;
                 end
                 else if (opcode == `JMP_OP) begin
-                    state = `IF1
+                    state = `IF1;
                 end
-                else if ((opcode == `ALU_OP) && ((func_code == `INST_FUNC_JPR) || (func_code == `INST_FUNC_WWD) ||(func_code == `INST_FUNC_HLT)) begin
+                else if (opcode == `ALU_OP && (func_code == `INST_FUNC_JPR || func_code == `INST_FUNC_WWD || func_code == `INST_FUNC_HLT)) begin
                     state = `IF1;
                 end
                 else if (opcode == `LWD_OP || opcode == `SWD_OP) begin

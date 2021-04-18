@@ -1,11 +1,12 @@
 `timescale 1ns/1ns
-`define WORD_SIZE 16    // data and address word size
 
 `include "opcodes.v"
-`include "alu.v"
+`include "extend.v"
+`include "inst_parser.v"
 `include "micro_code_controller.v"
 `include "register_file.v"
 `include "util.v"
+`include "alu.v"
 
 
 module cpu(clk, reset_n, read_m, write_m, address, data, num_inst, output_port, is_halted);
