@@ -27,7 +27,7 @@ module memory(clk, reset_n, read_m, write_m, address, data);
 	always@(posedge clk)
 		if(!reset_n)
 			begin
-				memory[16'h0] <= 16'h9023;
+				memory[16'h0] <= 16'h9023; // JMP 23
 				memory[16'h1] <= 16'h1;
 				memory[16'h2] <= 16'hffff;
 				memory[16'h3] <= 16'h0;
@@ -62,16 +62,16 @@ module memory(clk, reset_n, read_m, write_m, address, data);
 				memory[16'h20] <= 16'h0;
 				memory[16'h21] <= 16'h0;
 				memory[16'h22] <= 16'h0;
-				memory[16'h23] <= 16'h6000;
-				memory[16'h24] <= 16'hf01c;
+				memory[16'h23] <= 16'h6000; // LHI 0
+				memory[16'h24] <= 16'hf01c; // WWD $0
 				memory[16'h25] <= 16'h6100;
-				memory[16'h26] <= 16'hf41c;
+				memory[16'h26] <= 16'hf41c; // WWD $1
 				memory[16'h27] <= 16'h6200;
-				memory[16'h28] <= 16'hf81c;
+				memory[16'h28] <= 16'hf81c; // WWD $2
 				memory[16'h29] <= 16'h6300;
-				memory[16'h2a] <= 16'hfc1c;
-				memory[16'h2b] <= 16'h4401;
-				memory[16'h2c] <= 16'hf01c;
+				memory[16'h2a] <= 16'hfc1c; // 9. WWD $3
+				memory[16'h2b] <= 16'h4401; // 10. reg[0] = reg[1] + 1 // ADI
+				memory[16'h2c] <= 16'hf01c; // 11.
 				memory[16'h2d] <= 16'h4001;
 				memory[16'h2e] <= 16'hf01c;
 				memory[16'h2f] <= 16'h5901;

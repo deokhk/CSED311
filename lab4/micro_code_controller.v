@@ -11,7 +11,10 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
                            A_write_en, B_write_en,
                            bcond_write_en, aluout_write_en, next_pc_reg_write_en,
                            alu_opcode, wb_sel,
-                           num_inst
+                           num_inst,
+
+
+                           state
 
                            );
 
@@ -51,18 +54,18 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
     output wire wb_sel;
     output reg [`WORD_SIZE-1:0] num_inst;
 
-    reg [3:0] state;
+    output reg [3:0] state;
 
 
 	initial begin
 		state = 0;
-		num_inst = 0;
+		num_inst = -1;
 	end
 
 
 	always @(posedge reset_n) begin
 		state <= 0;
-		num_inst <= 0;
+		num_inst <= -1;
 	end
 
 
@@ -126,68 +129,68 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
 
     always @(posedge clk) begin
         case(state)
-            `IF1: begin // PC update 는 IF1 에서 하는 것.
-                num_inst = num_inst + 1;
-                state = `IF2;
+            `IF1: begin // PC update 는 IF1 에서 하는 것. 0
+                num_inst <= num_inst + 1;
+                state <= `IF2;
             end
-            `IF2: begin
-                state = `IF3;
+            `IF2: begin // 1
+                state <= `IF3;
             end
-            `IF3: begin
-                if (opcode != `JAL_OP) begin
-                    state = `EX1;
+            `IF3: begin // 2
+                if (opcode == `JAL_OP || opcode == `JMP_OP) begin
+                    state <= `EX1;
                 end
                 else begin 
-                    state = `ID;
+                    state <= `ID;
                 end
             end
-            `ID: begin
-                state = `EX1;
+            `ID: begin // 3
+                state <= `EX1;
             end 
-            `EX1: begin
-                state = `EX2;
+            `EX1: begin // 4
+                state <= `EX2;
             end
-            `EX2: begin
-                state = `EX3;
+            `EX2: begin // 5
+                state <= `EX3;
             end
-            `EX3: begin
+            `EX3: begin // 6
                 if (opcode == `BNE_OP || opcode == `BEQ_OP || opcode == `BGZ_OP || opcode == `BLZ_OP) begin
-                    state = `IF1;
+                    state <= `IF1;
                 end
                 else if (opcode == `JMP_OP) begin
-                    state = `IF1;
+                    state <= `IF1;
                 end
                 else if (opcode == `ALU_OP && (func_code == `INST_FUNC_JPR || func_code == `INST_FUNC_WWD || func_code == `INST_FUNC_HLT)) begin
-                    state = `IF1;
+                    state <= `IF1;
                 end
                 else if (opcode == `LWD_OP || opcode == `SWD_OP) begin
-                    state = `MEM1;
+                    state <= `MEM1;
                 end
                 else begin
-                    state = `WB;
+                    state <= `WB;
                 end
             end
-            `MEM1: begin
-                state = `MEM2;
+            `MEM1: begin // 7
+                state <= `MEM2;
             end
-            `MEM2: begin
-                state = `MEM3;
+            `MEM2: begin // 8
+                state <= `MEM3;
             end
-            `MEM3: begin
-                state = `MEM4;
+            `MEM3: begin // 9
+                state <= `MEM4;
             end
-            `MEM4: begin
+            `MEM4: begin // 10
                 if (opcode == `LWD_OP) begin
-                    state = `WB;
+                    state <= `WB;
                 end
                 else begin
-                    state = `IF1;
+                    state <= `IF1;
                 end
             end
-            `WB: begin
-                state = `IF1;
+            `WB: begin // 11
+                state <= `IF1;
             end
-            default: begin state = `IF1; end
+            default: begin state <= `IF1; end
          endcase
     end
 endmodule

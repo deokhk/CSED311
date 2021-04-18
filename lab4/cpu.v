@@ -9,7 +9,12 @@
 `include "alu.v"
 
 
-module cpu(clk, reset_n, read_m, write_m, address, data, num_inst, output_port, is_halted);
+module cpu(clk, reset_n, read_m, write_m, address, data, num_inst, output_port, is_halted,
+
+
+
+			state, pc, next_pc_reg, inst_reg, A_reg, opcode, func_code, regfile_regs
+);
 	input clk;
 	input reset_n;
 	
@@ -23,14 +28,27 @@ module cpu(clk, reset_n, read_m, write_m, address, data, num_inst, output_port, 
 	output reg [`WORD_SIZE-1:0] output_port;	// this will be used for a "WWD" instruction
 	output is_halted;
 
+
+	output wire [3:0] state;
+
+
+	output wire [15:0] regfile_regs [3:0];
+
+	// output reg [`WORD_SIZE-1:0] pc;
+	// output reg [`WORD_SIZE-1:0] next_pc_reg;
+	// output reg [`WORD_SIZE-1:0] inst_reg;
+	// output reg [`WORD_SIZE-1:0] A_reg;
+
+
+
 	// TODO : implement multi-cycle CPU
 
 	// Inst Parser
-    wire [3:0] opcode;
+    output wire [3:0] opcode;
 	wire [1:0] in_addr1;
 	wire [1:0] in_addr2;
 	wire [1:0] write_addr;
-    wire [5:0] func_code;
+    output wire [5:0] func_code;
 	wire [7:0] immediate_and_offset;
 	wire [11:0] target_address;
 
@@ -90,12 +108,12 @@ module cpu(clk, reset_n, read_m, write_m, address, data, num_inst, output_port, 
 	wire [`WORD_SIZE-1:0] num_inst_from_micro_controller;
 
 
-	reg [`WORD_SIZE-1:0] pc;
-	reg [`WORD_SIZE-1:0] next_pc_reg;
+	output reg [`WORD_SIZE-1:0] pc;
+	output reg [`WORD_SIZE-1:0] next_pc_reg;
 	reg [`WORD_SIZE-1:0] one;
-	reg [`WORD_SIZE-1:0] inst_reg;
+	output reg [`WORD_SIZE-1:0] inst_reg;
 	reg [`WORD_SIZE-1:0] mem_data_reg;
-	reg [`WORD_SIZE-1:0] A_reg;
+	output reg [`WORD_SIZE-1:0] A_reg;
 	reg [`WORD_SIZE-1:0] B_reg;
 	reg [`WORD_SIZE-1:0] ALUOut_reg;
 	reg bcond_reg;
@@ -167,7 +185,9 @@ module cpu(clk, reset_n, read_m, write_m, address, data, num_inst, output_port, 
 		.A_write_en(A_write_en), .B_write_en(B_write_en),
 		.bcond_write_en(bcond_write_en), .aluout_write_en(aluout_write_en), .next_pc_reg_write_en(next_pc_reg_write_en),
 		.alu_opcode(alu_opcode), .wb_sel(wb_sel),
-		.num_inst(num_inst_from_micro_controller)
+		.num_inst(num_inst_from_micro_controller),
+
+		.state(state)
 	);
 
 	PCMuxSelector pc_mux_selector (
@@ -189,7 +209,7 @@ module cpu(clk, reset_n, read_m, write_m, address, data, num_inst, output_port, 
         .write_addr(write_addr), .write_data(write_data),
         .reg_write_signal(reg_write), .clk(clk),
 
-        .reg_data1(reg_data1), .reg_data2(reg_data2)
+        .reg_data1(reg_data1), .reg_data2(reg_data2), .registers(regfile_regs)
 	); 
 
 	ExtendDelegator extend_delegator(
