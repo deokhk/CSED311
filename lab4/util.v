@@ -16,7 +16,7 @@ endmodule
 
 
 module mux2_1 (sel, i1, i2, o);
-   input [1:0] sel;
+   input sel;
    input [15:0] i1, i2;
    output reg [15:0] o;
 

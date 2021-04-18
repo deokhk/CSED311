@@ -47,7 +47,7 @@ module MicroCodeController(opcode, func_code, reset_n, clk,
     output wire aluout_write_en;
     output wire next_pc_reg_write_en;
 
-    output wire alu_opcode;
+    output wire [3:0] alu_opcode;
     output wire wb_sel;
     output reg [`WORD_SIZE-1:0] num_inst;
 
@@ -198,7 +198,7 @@ module PCMuxSelector(pc_source, bcond, opcode,
                      pc_mux_sel);
     input wire pc_source;
     input wire bcond;
-    input wire opcode;
+    input wire [3:0] opcode;
 
     output wire pc_mux_sel;
 

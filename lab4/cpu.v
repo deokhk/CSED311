@@ -84,7 +84,7 @@ module cpu(clk, reset_n, read_m, write_m, address, data, num_inst, output_port, 
     wire aluout_write_en;
     wire next_pc_reg_write_en;
 
-    wire alu_opcode;
+    wire [3:0] alu_opcode;
     wire wb_sel;
 	wire pc_mux_sel;
 	wire [`WORD_SIZE-1:0] num_inst_from_micro_controller;
