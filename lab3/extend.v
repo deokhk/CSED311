@@ -11,7 +11,7 @@ module ExtendDelegator(pc, opcode,
     input wire [7:0] immediate_and_offset;
     input wire [11:0] target_address;
 
-    output reg [15:0] extended_output;
+    output wire [15:0] extended_output;
 
 	wire [15:0] sign_extend_out;
 	wire [15:0] msb_zero_extend_out;
@@ -34,31 +34,12 @@ module ExtendDelegator(pc, opcode,
 	);
 
 
-	initial begin
-		extended_output = 0;
-	end
-
-
-    always @(*) begin
-        case (opcode)
-            `ADI_OP: extended_output = sign_extend_out;
-            `LWD_OP: extended_output = sign_extend_out;
-            `SWD_OP: extended_output = sign_extend_out;
-            `BNE_OP: extended_output = sign_extend_out;
-            `BEQ_OP: extended_output = sign_extend_out;
-            `BGZ_OP: extended_output = sign_extend_out;
-            `BLZ_OP: extended_output = sign_extend_out;
-
-            `ORI_OP: extended_output = msb_zero_extend_out;
-
-            `LHI_OP: extended_output = lsb_zero_extend_out;
-
-            `JMP_OP: extended_output = sign_extend_out;
-            `JAL_OP: extended_output = sign_extend_out;
-
-            default : extended_output = 0;
-        endcase
-    end
+    assign extended_output = (opcode == `ADI_OP || opcode == `LWD_OP || opcode == `SWD_OP || 
+                              opcode == `BNE_OP || opcode == `BEQ_OP || opcode == `BGZ_OP || 
+                              opcode == `BLZ_OP) ? sign_extend_out :
+                             (opcode == `ORI_OP ? msb_zero_extend_out : 
+                             (opcode == `LHI_OP ? lsb_zero_extend_out : 
+                             ((opcode == `JMP_OP || opcode == `JAL_OP) ? concat_pc_target_out : 0)));
 
 endmodule
 

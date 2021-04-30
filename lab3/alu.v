@@ -95,8 +95,8 @@ module ALU (alu_input_1, alu_input_2,
 
 			`BNE_OP:begin alu_output = 0;  bcond = (alu_input_1 != alu_input_2); end
 			`BEQ_OP:begin alu_output = 0;  bcond = (alu_input_1 == alu_input_2); end
-			`BGZ_OP:begin alu_output = 0;  bcond = (alu_input_1 > 0); end
-			`BLZ_OP:begin alu_output = 0;  bcond = (alu_input_1 < 0); end
+			`BGZ_OP:begin alu_output = 0;  bcond = ($signed(alu_input_1) > 0); end
+			`BLZ_OP:begin alu_output = 0;  bcond = ($signed(alu_input_1) < 0); end
 
 			`ADI_OP:begin alu_output = add_out; bcond = 0; end
 			`ORI_OP:begin alu_output = orr_out; bcond = 0; end
