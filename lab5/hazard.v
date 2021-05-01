@@ -1,6 +1,6 @@
 `include "opcodes.v"
 
-module hazard_detect(rs1_addr_id, rs2_addr_id,
+module HazardDetection(rs1_addr_id, rs2_addr_id,
 					 opcode, func_code,
 					rd_addr_ex, mem_read_ex
 
