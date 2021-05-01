@@ -87,7 +87,9 @@ module alu (alu_input_1, alu_input_2, opcode, func_code,
 					`INST_FUNC_SHL:begin alu_result = shl_out; bcond = 0; overflow_flag = 0; end
 					`INST_FUNC_SHR:begin alu_result = shr_out; bcond = 0; overflow_flag = 0; end
 					`INST_FUNC_JPR:begin alu_result = alu_input_1; bcond = 0; overflow_flag = 0; end //
-					`INST_FUNC_JRL:begin alu_result = alu_input_1; bcond = 0; overflow_flag = 0; end //
+					`INST_FUNC_JRL:begin alu_result = alu_input_1; bcond = 0; overflow_flag = 0; end
+					`INST_FUNC_WWD:begin alu_result = alu_input_1; bcond = 0; overflow_flag = 0; end
+					`INST_FUNC_HLT:begin alu_result = 0; bcond = 0; overflow_flag = 0; end
 					default:begin alu_result = 0; bcond = 0; overflow_flag = 0; end
 				endcase
 			end
