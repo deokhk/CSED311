@@ -29,33 +29,7 @@ module cpu(clk, reset_n,
 
 	//TODO: implement pipelined CPU
 
-	/////////////////  IF / ID reg /////////////////
-	reg [`WORD_SIZE-1:0] pc_id;
-	reg [`WORD_SIZE-1:0] inst_id;
-	/////////////////  IF / ID reg /////////////////
-
-	/////////////////  ID / EX reg /////////////////
-	reg [`WORD_SIZE-1:0] pc_ex;
-	reg [`WORD_SIZE-1:0] reg_data1_ex;
-	reg [`WORD_SIZE-1:0] reg_data2_ex;
-	reg [`WORD_SIZE-1:0] extended_output_ex;
-	reg [1:0] reg_write_addr_ex;
-	/////////////////  ID / EX reg /////////////////
-
-	/////////////////  EX / MEM reg /////////////////
-	reg [`WORD_SIZE-1:0] next_pc_mem;
-	reg [`WORD_SIZE-1:0] bcond_mem;
-	reg [`WORD_SIZE-1:0] alu_out_mem;
-	reg [`WORD_SIZE-1:0] reg_data2_mem;
-	reg [1:0] reg_write_addr_mem;
-	/////////////////  EX / MEM reg /////////////////
-
-	/////////////////  MEM / WB reg /////////////////
-	reg [`WORD_SIZE-1:0] mem_data_wb;
-	reg [`WORD_SIZE-1:0] alu_out_wb;
-	reg [1:0] reg_write_addr_wb;
-	/////////////////  MEM / WB reg /////////////////
-
+	// JorBTaken 을 control_hazard_flush 로 assign
 
 	always@(posedge clk) {
 		if (is_J_B_taken) {
@@ -71,3 +45,441 @@ module cpu(clk, reset_n,
 endmodule
 
 
+module IFIDPipeline(clk, reset_n, 
+				    new_pc, new_inst,
+					data_hazard_stall, control_hazard_flush,
+					
+					pc_id, inst_id);
+				
+	input wire clk;
+	input wire reset_n;
+
+	input wire [`WORD_SIZE-1:0] new_pc;
+	input wire [`WORD_SIZE-1:0] new_inst;
+	input wire data_hazard_stall;
+	input wire control_hazard_flush;
+
+	output wire [`WORD_SIZE-1:0] pc_id;
+	output wire [`WORD_SIZE-1:0] inst_id;
+
+	reg [`WORD_SIZE-1:0] pc;
+	reg [`WORD_SIZE-1:0] inst;
+
+	assign pc_id = pc;
+	assign inst_id = inst;
+
+	initial begin
+		pc = 0;
+		inst = 0;
+	end
+
+	always @(posedge reset_n) begin
+		pc <= 0;
+		inst <= 0;
+	end
+
+	always @(posedge clk) begin
+		// TODO: 이게 맞나?
+		if (control_hazard_flush) begin
+			pc <= 0;
+			inst <= 0;
+		end
+		else if (!data_hazard_stall) begin // no control hazard, no data hazard
+			pc <= new_pc;
+			inst <= new_inst;
+		end
+		// NOTE: else == no control hazard, yes data hazard
+	end
+endmodule
+
+
+module IDEXPipeline(clk, reset_n,
+					new_opcode, new_pc, new_reg_data1, new_reg_data2,
+					new_extended_output, new_rd_addr,
+					new_is_branch, new_is_jmp_jal, new_is_jpr_jrl,
+					new_mem_read, new_mem_to_reg, new_mem_write,
+					new_alu_src, new_reg_write, new_pc_to_reg,
+					data_hazard_stall, control_hazard_flush,
+
+					opcode_ex, pc_ex, reg_data1_ex, reg_data2_ex,
+					extended_output_ex, rd_addr_ex,
+					is_branch_ex, is_jmp_jal_ex, is_jpr_jrl_ex,
+					mem_read_ex, mem_to_reg_ex, mem_write_ex,
+					alu_src_ex, reg_write_ex, pc_to_reg_ex
+					);
+	input wire clk;
+	input wire reset_n;
+	
+	input wire [3:0] new_opcode;
+	input wire [`WORD_SIZE-1:0] new_pc;
+	input wire [`WORD_SIZE-1:0] new_reg_data1;
+	input wire [`WORD_SIZE-1:0] new_reg_data2;
+	input wire [`WORD_SIZE-1:0] new_extended_output;
+	input wire [1:0] new_rd_addr;
+
+	input wire new_is_branch;
+	input wire new_is_jmp_jal;
+	input wire new_is_jpr_jrl;
+	input wire new_mem_read;
+	input wire new_mem_to_reg;
+	input wire new_mem_write;
+	input wire new_alu_src;
+	input wire new_reg_write;
+	input wire new_pc_to_reg;
+	input wire data_hazard_stall;
+	input wire control_hazard_flush;
+
+
+	output wire [3:0] opcode_ex;
+	output wire [`WORD_SIZE-1:0] pc_ex;
+	output wire [`WORD_SIZE-1:0] reg_data1_ex;
+	output wire [`WORD_SIZE-1:0] reg_data2_ex;
+	output wire [`WORD_SIZE-1:0] extended_output_ex;
+	output wire [1:0] rd_addr_ex;
+
+	output wire is_branch_ex;
+	output wire is_jmp_jal_ex;
+	output wire is_jpr_jrl_ex;
+	output wire mem_read_ex;
+	output wire mem_to_reg_ex;
+	output wire mem_write_ex;
+	output wire alu_src_ex;
+	output wire reg_write_ex;
+	output wire pc_to_reg_ex;
+
+
+	reg [3:0] opcode;
+	reg [`WORD_SIZE-1:0] pc;
+	reg [`WORD_SIZE-1:0] reg_data1;
+	reg [`WORD_SIZE-1:0] reg_data2;
+	reg [`WORD_SIZE-1:0] extended_output;
+	reg [1:0] rd_addr;
+	reg is_branch;
+	reg is_jmp_jal;
+	reg is_jpr_jrl;
+	reg mem_read;
+	reg mem_to_reg;
+	reg mem_write;
+	reg alu_src;
+	reg reg_write;
+	reg pc_to_reg;
+
+
+	assign opcode_ex = opcode;
+	assign pc_ex = pc;
+	assign reg_data1_ex = reg_data1;
+	assign reg_data2_ex = reg_data2;
+	assign extended_output_ex = extended_output;
+	assign rd_addr_ex = rd_addr;
+	assign is_branch_ex = is_branch;
+	assign is_jmp_jal_ex = is_jmp_jal;
+	assign is_jpr_jrl_ex = is_jpr_jrl;
+	assign mem_read_ex = mem_read;
+	assign mem_to_reg_ex = mem_to_reg;
+	assign mem_write_ex = mem_write;
+	assign alu_src_ex = alu_src;
+	assign reg_write_ex = reg_write;
+	assign pc_to_reg_ex = pc_to_reg;
+
+
+	initial begin
+		opcode = 0;
+		pc = 0;
+		reg_data1 = 0;
+		reg_data2 = 0;
+		extended_output = 0;
+		rd_addr = 0;
+
+		is_branch = 0;
+		is_jmp_jal = 0;
+		is_jpr_jrl = 0;
+		mem_read = 0;
+		mem_to_reg = 0;
+		mem_write = 0;
+		alu_src = 0;
+		reg_write = 0;
+		pc_to_reg = 0;
+	end
+
+
+	always @(posedge reset_n) begin
+		opcode <= 0;
+		pc <= 0;
+		reg_data1 <= 0;
+		reg_data2 <= 0;
+		extended_output <= 0;
+		rd_addr <= 0;
+
+		is_branch <= 0;
+		is_jmp_jal <= 0;
+		is_jpr_jrl <= 0;
+		mem_read <= 0;
+		mem_to_reg <= 0;
+		mem_write <= 0;
+		alu_src <= 0;
+		reg_write <= 0;
+		pc_to_reg <= 0;
+	end
+
+	always @(posedge clk) begin
+		if (control_hazard_flush || data_hazard_stall) begin
+			is_branch <= 0;
+			is_jmp_jal <= 0;
+			is_jpr_jrl <= 0;
+			mem_read <= 0;
+			mem_to_reg <= 0;
+			mem_write <= 0;
+			alu_src <= 0;
+			reg_write <= 0;
+			pc_to_reg <= 0;
+		end
+		else begin // no control hazard, no data hazard
+			opcode <= new_opcode;
+			pc <= new_pc;
+			reg_data1 <= new_reg_data1;
+			reg_data2 <= new_reg_data2;
+			extended_output <= new_extended_output;
+			rd_addr <= new_rd_addr;
+
+			is_branch <= new_is_branch;
+			is_jmp_jal <= new_is_jmp_jal;
+			is_jpr_jrl <= new_is_jpr_jrl;
+			mem_read <= new_mem_read;
+			mem_to_reg <= new_mem_to_reg;
+			mem_write <= new_mem_write;
+			alu_src <= new_alu_src;
+			reg_write <= new_reg_write;
+			pc_to_reg <= new_pc_to_reg;
+		end
+	end
+
+endmodule
+
+
+module EXMEMPipeline(clk, reset_n,
+					 new_pc_candidate, new_bcond, new_alu_result,
+					 new_reg_data2, new_rd_addr,
+					 new_is_branch, new_is_jmp_jal, new_is_jpr_jrl,
+					 new_mem_read, new_mem_to_reg,
+					 new_mem_write, new_reg_write, new_pc_to_reg,
+					 control_hazard_flush,
+					 
+ 					 pc_candidate_mem, bcond_mem, alu_result_mem,
+					 reg_data2_mem, rd_addr_mem,
+					 is_branch_mem, is_jmp_jal_mem, is_jpr_jrl_mem,
+					 mem_read_mem, mem_to_reg_mem, mem_write_mem,
+					 reg_write_mem, pc_to_reg_mem);
+
+	
+	input wire clk;
+	input wire reset_n;
+	input wire [`WORD_SIZE-1:0] new_pc_candidate;
+	input wire new_bcond;
+	input wire [`WORD_SIZE-1:0] new_alu_result;
+	input wire [`WORD_SIZE-1:0] new_reg_data2;
+	input wire [1:0] new_rd_addr;
+
+	input wire new_is_branch;
+	input wire new_is_jmp_jal;
+	input wire new_is_jpr_jrl;
+	input wire new_mem_read;
+	input wire new_mem_to_reg;
+	input wire new_mem_write;
+	input wire new_reg_write;
+	input wire new_pc_to_reg;
+	input wire control_hazard_flush;
+
+
+	output wire [`WORD_SIZE-1:0] pc_candidate_mem;
+	output wire bcond_mem;
+	output wire [`WORD_SIZE-1:0] alu_result_mem;
+	output wire [`WORD_SIZE-1:0] reg_data2_mem;
+	output wire [1:0] rd_addr_mem;
+
+	output wire is_branch_mem;
+	output wire is_jmp_jal_mem;
+	output wire is_jpr_jrl_mem;
+	output wire mem_read_mem;
+	output wire mem_to_reg_mem;
+	output wire mem_write_mem;
+	output wire reg_write_mem;
+	output wire pc_to_reg_mem;
+
+
+	reg [`WORD_SIZE-1:0] pc_candidate;
+	reg bcond;
+	reg [`WORD_SIZE-1:0] alu_result;
+	reg [`WORD_SIZE-1:0] reg_data2;
+	reg [1:0] rd_addr;
+	reg is_branch;
+	reg is_jmp_jal;
+	reg is_jpr_jrl;
+	reg mem_read;
+	reg mem_to_reg;
+	reg mem_write;
+	reg reg_write;
+	reg pc_to_reg;
+
+
+	assign pc_candidate_mem = pc_candidate;
+	assign bcond_mem = bcond;
+	assign alu_result_mem = alu_result;
+	assign reg_data2_mem = reg_data2;
+	assign rd_addr_mem = rd_addr;
+	assign is_branch_mem = is_branch;
+	assign is_jmp_jal_mem = is_jmp_jal;
+	assign is_jpr_jrl_mem = is_jpr_jrl;
+	assign mem_read_mem = mem_read;
+	assign mem_to_reg_mem = mem_to_reg;
+	assign mem_write_mem = mem_write;
+	assign reg_write_mem = reg_write;
+	assign pc_to_reg_mem = pc_to_reg;
+
+
+	initial begin
+		pc_candidate = 0;
+		bcond = 0;
+		alu_result = 0;
+		reg_data2 = 0;
+		rd_addr = 0;
+
+		is_branch = 0;
+		is_jmp_jal = 0;
+		is_jpr_jrl = 0;
+		mem_read = 0;
+		mem_to_reg = 0;
+		mem_write = 0;
+		reg_write = 0;
+		pc_to_reg = 0;
+	end
+
+
+	always @(posedge reset_n) begin
+		pc_candidate <= 0;
+		bcond <= 0;
+		alu_result <= 0;
+		reg_data2 <= 0;
+		rd_addr <= 0;
+
+		is_branch <= 0;
+		is_jmp_jal <= 0;
+		is_jpr_jrl <= 0;
+		mem_read <= 0;
+		mem_to_reg <= 0;
+		mem_write <= 0;
+		reg_write <= 0;
+		pc_to_reg <= 0;
+	end
+
+	always @(posedge clk) begin
+		if (control_hazard_flush) begin
+			is_branch <= 0;
+			is_jmp_jal <= 0;
+			is_jpr_jrl <= 0;
+			mem_read <= 0;
+			mem_to_reg <= 0;
+			mem_write <= 0;
+			reg_write <= 0;
+			pc_to_reg <= 0;
+		end
+		else begin // no control hazard, no data hazard
+			pc_candidate <= new_pc_candidate;
+			bcond <= new_bcond;
+			alu_result <= new_alu_result;
+			reg_data2 <= new_reg_data2;
+			rd_addr <= new_rd_addr;
+
+			is_branch <= new_is_branch;
+			is_jmp_jal <= new_is_jmp_jal;
+			is_jpr_jrl <= new_is_jpr_jrl;
+			mem_read <= new_mem_read;
+			mem_to_reg <= new_mem_to_reg;
+			mem_write <= new_mem_write;
+			reg_write <= new_reg_write;
+			pc_to_reg <= new_pc_to_reg;
+		end
+	end
+
+endmodule
+
+
+module MEMWBPipeline(clk, reset_n,
+					 new_pc, new_alu_result, new_mem_data, new_rd_addr, 
+					 new_mem_to_reg, new_reg_write, new_pc_to_reg,
+
+);
+	input wire clk;
+	input wire reset_n;
+	input wire [`WORD_SIZE-1:0] new_pc;
+	input wire [`WORD_SIZE-1:0] new_alu_result;
+	input wire [`WORD_SIZE-1:0] new_mem_data;
+	input wire [1:0] new_rd_addr;
+	input wire new_mem_to_reg;
+	input wire new_reg_write;
+	input wire new_pc_to_reg;
+
+
+	output wire [`WORD_SIZE-1:0] pc_wb;
+	output wire [`WORD_SIZE-1:0] alu_result_wb;
+	output wire [`WORD_SIZE-1:0] mem_data_wb;
+	output wire [1:0] rd_addr_wb;
+	output wire mem_to_reg_wb;
+	output wire reg_write_wb;
+	output wire pc_to_reg_wb;
+
+
+	reg [`WORD_SIZE-1:0] pc;
+	reg [`WORD_SIZE-1:0] alu_result;
+	reg [`WORD_SIZE-1:0] mem_data;
+	reg [1:0] rd_addr;
+	reg mem_to_reg;
+	reg reg_write;
+	reg pc_to_reg;
+
+
+	assign pc_wb = pc;
+	assign alu_result_wb = alu_result;
+	assign mem_data_wb = mem_data;
+	assign rd_addr_wb = rd_addr;
+
+	assign mem_to_reg_wb = mem_to_reg;
+	assign reg_write_wb = reg_write;
+	assign pc_to_reg_wb = pc_to_reg;
+
+
+	initial begin
+		pc = 0;
+		alu_result = 0;
+		mem_data = 0;
+		rd_addr = 0;
+
+		mem_to_reg = 0;
+		reg_write = 0;
+		pc_to_reg = 0;
+	end
+
+
+	always @(posedge reset_n) begin
+		pc <= 0;
+		alu_result <= 0;
+		mem_data <= 0;
+		rd_addr <= 0;
+
+		mem_to_reg <= 0;
+		reg_write <= 0;
+		pc_to_reg <= 0;
+	end
+
+
+	always @(posedge clk) begin
+		pc <= new_pc;
+		alu_result <= new_alu_result;
+		mem_data <= new_mem_data;
+		rd_addr <= new_rd_addr;
+
+		mem_to_reg <= new_mem_to_reg;
+		reg_write <= new_reg_write;
+		pc_to_reg <= new_pc_to_reg;
+	end
+
+endmodule
