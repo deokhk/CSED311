@@ -1,4 +1,8 @@
 `include "opcodes.v" 
+`include "module_add_sub.v"
+`include "module_bitwise.v"
+`include "module_others.v"
+
 
 module alu (alu_input_1, alu_input_2, opcode, func_code,
 			
@@ -12,8 +16,6 @@ module alu (alu_input_1, alu_input_2, opcode, func_code,
 	output reg [`WORD_SIZE-1:0] alu_result;
 	output reg overflow_flag; 
 	output reg bcond;
-
-	//TODO: implement alu
 
 	wire [`NumBits - 1: 0] add_out;
 	wire [`NumBits - 1: 0] sub_out;
