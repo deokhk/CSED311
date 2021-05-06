@@ -79,7 +79,6 @@ module IFIDPipeline(clk, reset_n,
 	end
 
 	always @(posedge clk) begin
-		// TODO: 이게 맞나?
 		if (control_hazard_flush) begin
 			pc <= 0;
 			inst <= 0;
@@ -94,14 +93,16 @@ endmodule
 
 
 module IDEXPipeline(clk, reset_n,
-					new_opcode, new_pc, new_reg_data1, new_reg_data2,
+					new_opcode, new_func_code,
+					new_pc, new_reg_data1, new_reg_data2,
 					new_extended_output, new_rd_addr,
 					new_is_branch, new_is_jmp_jal, new_is_jpr_jrl,
 					new_mem_read, new_mem_to_reg, new_mem_write,
 					new_alu_src, new_reg_write, new_pc_to_reg,
 					data_hazard_stall, control_hazard_flush,
 
-					opcode_ex, pc_ex, reg_data1_ex, reg_data2_ex,
+					opcode_ex, func_code_ex,
+					pc_ex, reg_data1_ex, reg_data2_ex,
 					extended_output_ex, rd_addr_ex,
 					is_branch_ex, is_jmp_jal_ex, is_jpr_jrl_ex,
 					mem_read_ex, mem_to_reg_ex, mem_write_ex,
@@ -111,6 +112,7 @@ module IDEXPipeline(clk, reset_n,
 	input wire reset_n;
 	
 	input wire [3:0] new_opcode;
+	input wire [5:0] new_func_code;
 	input wire [`WORD_SIZE-1:0] new_pc;
 	input wire [`WORD_SIZE-1:0] new_reg_data1;
 	input wire [`WORD_SIZE-1:0] new_reg_data2;
@@ -131,6 +133,7 @@ module IDEXPipeline(clk, reset_n,
 
 
 	output wire [3:0] opcode_ex;
+	output wire [5:0] func_code_ex;
 	output wire [`WORD_SIZE-1:0] pc_ex;
 	output wire [`WORD_SIZE-1:0] reg_data1_ex;
 	output wire [`WORD_SIZE-1:0] reg_data2_ex;
@@ -149,6 +152,7 @@ module IDEXPipeline(clk, reset_n,
 
 
 	reg [3:0] opcode;
+	reg [5:0] func_code;
 	reg [`WORD_SIZE-1:0] pc;
 	reg [`WORD_SIZE-1:0] reg_data1;
 	reg [`WORD_SIZE-1:0] reg_data2;
@@ -166,6 +170,7 @@ module IDEXPipeline(clk, reset_n,
 
 
 	assign opcode_ex = opcode;
+	assign func_code_ex = func_code;
 	assign pc_ex = pc;
 	assign reg_data1_ex = reg_data1;
 	assign reg_data2_ex = reg_data2;
@@ -184,6 +189,7 @@ module IDEXPipeline(clk, reset_n,
 
 	initial begin
 		opcode = 0;
+		func_code = 0;
 		pc = 0;
 		reg_data1 = 0;
 		reg_data2 = 0;
@@ -204,6 +210,7 @@ module IDEXPipeline(clk, reset_n,
 
 	always @(posedge reset_n) begin
 		opcode <= 0;
+		func_code <= 0;
 		pc <= 0;
 		reg_data1 <= 0;
 		reg_data2 <= 0;
@@ -223,6 +230,9 @@ module IDEXPipeline(clk, reset_n,
 
 	always @(posedge clk) begin
 		if (control_hazard_flush || data_hazard_stall) begin
+			opcode <= 0;
+			func_code <= 0;
+
 			is_branch <= 0;
 			is_jmp_jal <= 0;
 			is_jpr_jrl <= 0;
@@ -235,6 +245,7 @@ module IDEXPipeline(clk, reset_n,
 		end
 		else begin // no control hazard, no data hazard
 			opcode <= new_opcode;
+			func_code <= new_func_code;
 			pc <= new_pc;
 			reg_data1 <= new_reg_data1;
 			reg_data2 <= new_reg_data2;
@@ -257,15 +268,17 @@ endmodule
 
 
 module EXMEMPipeline(clk, reset_n,
+					 new_opcode, new_func_code,
 					 new_pc_candidate, new_bcond, new_alu_result,
-					 new_reg_data2, new_rd_addr,
+					 new_forwarded_data1, new_forwarded_data2, new_rd_addr,
 					 new_is_branch, new_is_jmp_jal, new_is_jpr_jrl,
 					 new_mem_read, new_mem_to_reg,
 					 new_mem_write, new_reg_write, new_pc_to_reg,
 					 control_hazard_flush,
 					 
+					 opcode_mem, func_code_mem,
  					 pc_candidate_mem, bcond_mem, alu_result_mem,
-					 reg_data2_mem, rd_addr_mem,
+					 forwarded_data1_mem, forwarded_data2_mem, rd_addr_mem,
 					 is_branch_mem, is_jmp_jal_mem, is_jpr_jrl_mem,
 					 mem_read_mem, mem_to_reg_mem, mem_write_mem,
 					 reg_write_mem, pc_to_reg_mem);
@@ -273,10 +286,13 @@ module EXMEMPipeline(clk, reset_n,
 	
 	input wire clk;
 	input wire reset_n;
+	input wire [3:0] new_opcode;
+	input wire [5:0] new_func_code;
 	input wire [`WORD_SIZE-1:0] new_pc_candidate;
 	input wire new_bcond;
 	input wire [`WORD_SIZE-1:0] new_alu_result;
-	input wire [`WORD_SIZE-1:0] new_reg_data2;
+	input wire [`WORD_SIZE-1:0] new_forwarded_data1;
+	input wire [`WORD_SIZE-1:0] new_forwarded_data2;
 	input wire [1:0] new_rd_addr;
 
 	input wire new_is_branch;
@@ -289,11 +305,13 @@ module EXMEMPipeline(clk, reset_n,
 	input wire new_pc_to_reg;
 	input wire control_hazard_flush;
 
-
+	output wire [3:0] opcode_mem;
+	output wire [5:0] func_code_mem;
 	output wire [`WORD_SIZE-1:0] pc_candidate_mem;
 	output wire bcond_mem;
 	output wire [`WORD_SIZE-1:0] alu_result_mem;
-	output wire [`WORD_SIZE-1:0] reg_data2_mem;
+	output wire [`WORD_SIZE-1:0] forwarded_data1_mem;
+	output wire [`WORD_SIZE-1:0] forwarded_data2_mem;
 	output wire [1:0] rd_addr_mem;
 
 	output wire is_branch_mem;
@@ -305,11 +323,13 @@ module EXMEMPipeline(clk, reset_n,
 	output wire reg_write_mem;
 	output wire pc_to_reg_mem;
 
-
+	reg [3:0] opcode;
+	reg [5:0] func_code;
 	reg [`WORD_SIZE-1:0] pc_candidate;
 	reg bcond;
 	reg [`WORD_SIZE-1:0] alu_result;
-	reg [`WORD_SIZE-1:0] reg_data2;
+	reg [`WORD_SIZE-1:0] forwarded_data1;
+	reg [`WORD_SIZE-1:0] forwarded_data2;
 	reg [1:0] rd_addr;
 	reg is_branch;
 	reg is_jmp_jal;
@@ -320,11 +340,13 @@ module EXMEMPipeline(clk, reset_n,
 	reg reg_write;
 	reg pc_to_reg;
 
-
+	assign opcode_mem = opcode;
+	assign func_code_mem = func_code;
 	assign pc_candidate_mem = pc_candidate;
 	assign bcond_mem = bcond;
 	assign alu_result_mem = alu_result;
-	assign reg_data2_mem = reg_data2;
+	assign forwarded_data1_mem = forwarded_data1;
+	assign forwarded_data2_mem = forwarded_data2;
 	assign rd_addr_mem = rd_addr;
 	assign is_branch_mem = is_branch;
 	assign is_jmp_jal_mem = is_jmp_jal;
@@ -337,10 +359,13 @@ module EXMEMPipeline(clk, reset_n,
 
 
 	initial begin
+		opcode = 0;
+		func_code = 0;
 		pc_candidate = 0;
 		bcond = 0;
 		alu_result = 0;
-		reg_data2 = 0;
+		forwarded_data1 = 0;
+		forwarded_data2 = 0;
 		rd_addr = 0;
 
 		is_branch = 0;
@@ -355,10 +380,13 @@ module EXMEMPipeline(clk, reset_n,
 
 
 	always @(posedge reset_n) begin
+		opcode <= 0;
+		func_code <= 0;
 		pc_candidate <= 0;
 		bcond <= 0;
 		alu_result <= 0;
-		reg_data2 <= 0;
+		forwarded_data1 <= 0;
+		forwarded_data2 <= 0;
 		rd_addr <= 0;
 
 		is_branch <= 0;
@@ -373,6 +401,9 @@ module EXMEMPipeline(clk, reset_n,
 
 	always @(posedge clk) begin
 		if (control_hazard_flush) begin
+			opcode <= 0;
+			func_code <= 0;
+
 			is_branch <= 0;
 			is_jmp_jal <= 0;
 			is_jpr_jrl <= 0;
@@ -383,10 +414,13 @@ module EXMEMPipeline(clk, reset_n,
 			pc_to_reg <= 0;
 		end
 		else begin // no control hazard, no data hazard
+			opcode <= new_opcode;
+			func_code <= new_func_code;
 			pc_candidate <= new_pc_candidate;
 			bcond <= new_bcond;
 			alu_result <= new_alu_result;
-			reg_data2 <= new_reg_data2;
+			forwarded_data1 <= new_forwarded_data1;
+			forwarded_data2 <= new_forwarded_data2;
 			rd_addr <= new_rd_addr;
 
 			is_branch <= new_is_branch;
@@ -404,42 +438,61 @@ endmodule
 
 
 module MEMWBPipeline(clk, reset_n,
-					 new_pc, new_alu_result, new_mem_data, new_rd_addr, 
+					 new_opcode, new_func_code,
+					 new_pc, new_alu_result, new_mem_data,
+					 new_forwarded_data1, new_rd_addr, 
 					 new_mem_to_reg, new_reg_write, new_pc_to_reg,
+					 
+					 opcode_wb, func_code_wb,// CPU에서 해당 값을 봐서 0이면 non-valid한 instruction이라 num_inst를 1 증가시켜주지 않고, 그 이외의 경우 num_inst 1증가.
+					 pc_wb, alu_result_wb, mem_data_wb,
+					 forwarded_data1_wb, rd_addr_wb,
+					 mem_to_reg_wb, reg_write_wb, pc_to_reg_wb
 
 );
 	input wire clk;
 	input wire reset_n;
+	input wire [3:0] new_opcode;
+	input wire [5:0] new_func_code;
 	input wire [`WORD_SIZE-1:0] new_pc;
 	input wire [`WORD_SIZE-1:0] new_alu_result;
 	input wire [`WORD_SIZE-1:0] new_mem_data;
+	input wire [`WORD_SIZE-1:0] new_forwarded_data1;
 	input wire [1:0] new_rd_addr;
 	input wire new_mem_to_reg;
 	input wire new_reg_write;
 	input wire new_pc_to_reg;
 
 
+	output wire [3:0] opcode_wb;
+	output wire [5:0] func_code_wb;
 	output wire [`WORD_SIZE-1:0] pc_wb;
 	output wire [`WORD_SIZE-1:0] alu_result_wb;
 	output wire [`WORD_SIZE-1:0] mem_data_wb;
+	output wire [`WORD_SIZE-1:0] forwarded_data1_wb;
 	output wire [1:0] rd_addr_wb;
 	output wire mem_to_reg_wb;
 	output wire reg_write_wb;
 	output wire pc_to_reg_wb;
 
 
+	reg [3:0] opcode;
+	reg [5:0] func_code;
 	reg [`WORD_SIZE-1:0] pc;
 	reg [`WORD_SIZE-1:0] alu_result;
 	reg [`WORD_SIZE-1:0] mem_data;
+	reg [`WORD_SIZE-1:0] forwarded_data1;
 	reg [1:0] rd_addr;
 	reg mem_to_reg;
 	reg reg_write;
 	reg pc_to_reg;
 
 
+	assign opcode_wb = opcode;
+	assign func_code_wb = func_code;
 	assign pc_wb = pc;
 	assign alu_result_wb = alu_result;
 	assign mem_data_wb = mem_data;
+	assign forwarded_data1_wb = forwarded_data1;
 	assign rd_addr_wb = rd_addr;
 
 	assign mem_to_reg_wb = mem_to_reg;
@@ -448,9 +501,12 @@ module MEMWBPipeline(clk, reset_n,
 
 
 	initial begin
+		opcode = 0;
+		func_code = 0;
 		pc = 0;
 		alu_result = 0;
 		mem_data = 0;
+		forwarded_data1 = 0;
 		rd_addr = 0;
 
 		mem_to_reg = 0;
@@ -460,9 +516,12 @@ module MEMWBPipeline(clk, reset_n,
 
 
 	always @(posedge reset_n) begin
+		opcode <= 0;
+		func_code <= 0;
 		pc <= 0;
 		alu_result <= 0;
 		mem_data <= 0;
+		forwarded_data1 <= 0;
 		rd_addr <= 0;
 
 		mem_to_reg <= 0;
@@ -472,9 +531,12 @@ module MEMWBPipeline(clk, reset_n,
 
 
 	always @(posedge clk) begin
+		opcode <= new_opcode;
+		func_code <= new_func_code;
 		pc <= new_pc;
 		alu_result <= new_alu_result;
 		mem_data <= new_mem_data;
+		forwarded_data1 <= new_forwarded_data1;
 		rd_addr <= new_rd_addr;
 
 		mem_to_reg <= new_mem_to_reg;
