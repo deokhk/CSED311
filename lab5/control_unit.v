@@ -1,7 +1,7 @@
 `include "opcodes.v"
 
 
-module control_unit (opcode, func_code, clk, reset_n,
+module ControlUnit (opcode, func_code, clk, reset_n,
 
 					opcode_out, func_code_out,
 					is_branch, is_jmp_jal, is_jpr_jrl,
@@ -35,5 +35,20 @@ module control_unit (opcode, func_code, clk, reset_n,
     assign reg_write = ((opcode == `ADI_OP) || (opcode == `ORI_OP) || (opcode == `LHI_OP) || (opcode == `LWD_OP))
 					|| ((opcode == `ALU_OP) && (func_code != `INST_FUNC_JPR) && (func_code != `INST_FUNC_WWD) && (func_code != `INST_FUNC_HLT));
     assign pc_to_reg = (opcode == `JAL_OP) || ((opcode == `JRL_OP) && (func_code == `INST_FUNC_JRL));
+
+endmodule
+
+module JorBTakenUnit(is_branch, is_jmp_jal, is_jpr_jrl, bcond,
+
+					 is_j_or_b_taken);
+
+	input is_branch;
+	input is_jmp_jal;
+	input is_jpr_jrl;
+	input bcond;
+	
+    output wire is_j_or_b_taken;
+
+	assign is_j_or_b_taken = (is_branch && bcond) || (is_jmp_jal || is_jpr_jrl);
 
 endmodule

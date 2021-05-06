@@ -4,7 +4,7 @@
 `include "module_others.v"
 
 
-module alu (alu_input_1, alu_input_2, opcode, func_code,
+module ALU (alu_input_1, alu_input_2, opcode, func_code,
 			
 			alu_out, overflow_flag, bcond);
 

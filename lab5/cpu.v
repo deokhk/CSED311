@@ -14,6 +14,8 @@ module cpu(clk, reset_n,
 	input clk;
 	input reset_n;
 
+	// read_m1, address1, data1: instruction memory
+	// read_m2, write_m2, address2, data2: data memory
 	input [`WORD_SIZE-1:0] data1;
 	inout [`WORD_SIZE-1:0] data2;
 
@@ -27,20 +29,48 @@ module cpu(clk, reset_n,
 	output [`WORD_SIZE-1:0] output_port;
 	output is_halted;
 
-	//TODO: implement pipelined CPU
 
-	// JorBTaken 을 control_hazard_flush 로 assign
+	wire [`WORD_SIZE-1:0] pc_plus_1;
+	wire [`WORD_SIZE-1:0] pc_next;
 
-	always@(posedge clk) {
-		if (is_J_B_taken) {
-			// IF/ID stage reg 에 있는 control value 들을 0으로 
-			// pc_id <= 0;
+	wire is_j_or_b_taken;
 
-			// ID/EX stage reg 에 있는 control value 들을 0 으로
-			pc_ex <= 0;
+	reg [`WORD_SIZE-1:0] pc;
+	reg [`WORD_SIZE-1:0] one;
 
-		}
-	}
+	// TODO: JorBTaken 을 control_hazard_flush 로 assign
+
+	ADDModule pc_plus_1_adder (
+		.A(pc), .B(one),
+		.C(pc_plus_1)
+	);
+	Mux2to1 pc_mux (
+		.in0(pc_plus_1), .in1(/* next_pc_mem */), .sel(is_j_or_b_taken),
+		.out(pc_next)
+	);
+
+
+	IFIDPipeline IF_ID_pipeline (
+		.clk(clk), .reset_n(reset_n), 
+		.new_pc(pc), .new_inst(data1),
+		.data_hazard_stall(), .control_hazard_flush(is_j_or_b_taken),
+
+		.pc_id(), .inst_id()
+	);
+
+	initial begin
+		pc = 0;
+		one = 1;
+
+	end
+
+
+	always @(posedge reset_n) begin
+		pc <= 0;
+		one <= 1;
+
+	end
+
 
 endmodule
 

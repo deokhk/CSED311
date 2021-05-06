@@ -1,6 +1,6 @@
 `include "opcodes.v" 
 
-module register_file (clk, reset_n,
+module RegisterFile (clk, reset_n,
 					  in_addr1, in_addr2, write_addr,
 					  write_data, reg_write_signal,
 

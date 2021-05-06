@@ -227,6 +227,7 @@ module Memory(clk, reset_n, read_m1, address1, data1, read_m2, write_m2, address
 			end
 		else
 			begin
+				// 아래의 경우 memory 내부에서 internal forwarding이 일어남. 우리가 읽으려고 하는 메모리 주소에 누군가 쓰고 있을 경우, 쓸 데이터를 가져옴.
 				if(read_m1) data1 <= (write_m2 & address1==address2) ? data2 : memory[address1];
 				if(read_m2) output_data2 <= memory[address2];
 				if(write_m2) memory[address2] <= data2;															  
