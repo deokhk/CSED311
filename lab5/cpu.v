@@ -160,8 +160,10 @@ module cpu(clk, reset_n,
 
 	RegisterFile register_file (
 		.clk(clk), .reset_n(reset_n),
-		.in_addr1(in_addr1_ip), .in_addr2(in_addr2_ip), .write_addr(write_addr_ip),
-		.write_data(write_data), .reg_write_signal(/* reg_write_wb */),
+		.in_addr1(in_addr1_ip), .in_addr2(in_addr2_ip), // younger
+		.write_addr(/* write_addr_wb */), // older
+		.write_data(write_data), // older
+		.reg_write_signal(/* reg_write_wb */), // older
 
 		.reg_data1(reg_data1_rf), .reg_data2(reg_data2_rf)
 	);
