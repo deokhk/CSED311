@@ -1,7 +1,17 @@
 `timescale 1ns/1ns
 `define WORD_SIZE 16    // data and address word size
 
-`include "datapath.v"
+`include "alu.v"
+`include "control_unit.v"
+`include "extend.v"
+`include "forward.v"
+`include "hazard.v"
+`include "inst_parser.v"
+
+`include "opcodes.v"
+`include "register_file.v"
+`include "util.v"
+
 
 module cpu(clk, reset_n,
 		   data1,
