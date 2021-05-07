@@ -33,7 +33,6 @@ module cpu(clk, reset_n,
 	wire [`WORD_SIZE-1:0] pc_plus_1;
 	wire [`WORD_SIZE-1:0] pc_next;
 
-	wire is_j_or_b_taken;
 	wire [`WORD_SIZE-1:0] pc_id;
 	wire [`WORD_SIZE-1:0] inst_id;
 
@@ -59,7 +58,9 @@ module cpu(clk, reset_n,
 
     wire [15:0] extended_output_ed;
 
-	wire [15:0] write_data;
+	wire [`WORD_SIZE-1:0] pc_wb_plus_1_out;
+
+	wire [15:0] wb_mux_out;
 	wire [`WORD_SIZE-1:0] reg_data1_rf;
 	wire [`WORD_SIZE-1:0] reg_data2_rf;
 
@@ -82,6 +83,8 @@ module cpu(clk, reset_n,
 	wire reg_write_ex;
 	wire pc_to_reg_ex;
 
+	wire is_stall;
+
     wire [1:0] forward_a;
     wire [1:0] forward_b;
 
@@ -99,24 +102,64 @@ module cpu(clk, reset_n,
 	wire [`WORD_SIZE-1:0] pc_plus_offset;
 	wire [`WORD_SIZE-1:0] j_or_b_pc_mux_out;
 
+	wire [3:0] opcode_mem;
+	wire [5:0] func_code_mem;
+	wire [`WORD_SIZE-1:0] pc_mem;
+	wire [`WORD_SIZE-1:0] j_or_b_pc_candidate_mem;
+	wire bcond_mem;
+	wire [`WORD_SIZE-1:0] alu_result_mem;
+	wire [`WORD_SIZE-1:0] forwarded_data1_mem;
+	wire [`WORD_SIZE-1:0] forwarded_data2_mem;
+	wire [1:0] rd_addr_mem;
 
+	wire is_branch_mem;
+	wire is_jmp_jal_mem;
+	wire is_jpr_jrl_mem;
+	wire mem_read_mem;
+	wire mem_to_reg_mem;
+	wire mem_write_mem;
+	wire reg_write_mem;
+	wire pc_to_reg_mem;
 
+	wire is_j_or_b_taken;
+
+	wire [3:0] opcode_wb;
+	wire [5:0] func_code_wb;
+	wire [`WORD_SIZE-1:0] pc_wb;
+	wire [`WORD_SIZE-1:0] alu_result_wb;
+	wire [`WORD_SIZE-1:0] mem_data_wb;
+	wire [`WORD_SIZE-1:0] forwarded_data1_wb;
+	wire [1:0] rd_addr_wb;
+	wire mem_to_reg_wb;
+	wire reg_write_wb;
+	wire pc_to_reg_wb;
+
+	wire [`WORD_SIZE-1:0] mem_to_reg_out;
 
 
 	reg [`WORD_SIZE-1:0] pc;
 	reg [`WORD_SIZE-1:0] one;
 
 
-	// TODO: JorBTaken 을 control_hazard_flush 로 assign
 	assign read_m1 = reset_n;
 	assign address1 = pc;
+
+	assign read_m2 = mem_read_mem;
+	assign write_m2 = mem_write_mem;
+	assign address2 = alu_result_mem;
+	assign data2 = write_m2 ? forwarded_data2_mem : `WORD_SIZE'bz;
+
+	assign num_inst = ;
+	assign output_port = ;
+	assign is_halted = ;
+
 
 	ADDModule pc_plus_1_adder (
 		.A(pc), .B(one),
 		.C(pc_plus_1)
 	);
 	Mux2to1 pc_mux (
-		.in0(pc_plus_1), .in1(/* next_pc_mem */), .sel(is_j_or_b_taken),
+		.in0(pc_plus_1), .in1(j_or_b_pc_candidate_mem), .sel(is_j_or_b_taken),
 		.out(pc_next)
 	);
 
@@ -124,7 +167,7 @@ module cpu(clk, reset_n,
 	IFIDPipeline IF_ID_pipeline (
 		.clk(clk), .reset_n(reset_n),
 		.new_pc(pc), .new_inst(data1),
-		.data_hazard_stall(/*   */), .control_hazard_flush(is_j_or_b_taken),
+		.data_hazard_stall(is_stall), .control_hazard_flush(is_j_or_b_taken),
 
 		.pc_id(pc_id), .inst_id(inst_id)
 	);
@@ -153,17 +196,23 @@ module cpu(clk, reset_n,
 		.extended_output(extended_output_ed)
 	);
 
-	Mux2to1 wb_mux (
-		.in0(/* output of mem_to_reg mux*/), .in1(/* pc_wb or pc_wb+1 */), .sel(/* pc_to_reg_wb */),
-		.out(write_data)
+	ADDModule pc_wb_plus_1 (
+		.A(pc_wb), .B(one),
+		.C(pc_wb_plus_1_out)
 	);
 
+	Mux2to1 wb_mux (
+		.in0(mem_to_reg_out), .in1(pc_wb_plus_1_out), .sel(pc_to_reg_wb),
+		.out(wb_mux_out)
+	);
+
+	// TODO: 일단 한 번 다 연결하고, 돌리기 전에 시나리오대로 연결되어있는지 확인.
 	RegisterFile register_file (
 		.clk(clk), .reset_n(reset_n),
 		.in_addr1(in_addr1_ip), .in_addr2(in_addr2_ip), // younger
-		.write_addr(/* write_addr_wb */), // older
-		.write_data(write_data), // older
-		.reg_write_signal(/* reg_write_wb */), // older
+		.write_addr(rd_addr_wb), // older
+		.write_data(wb_mux_out), // older
+		.reg_write_signal(reg_write_wb), // older
 
 		.reg_data1(reg_data1_rf), .reg_data2(reg_data2_rf)
 	);
@@ -177,7 +226,7 @@ module cpu(clk, reset_n,
 		.new_is_branch(is_branch_cu), .new_is_jmp_jal(is_jmp_jal_cu), .new_is_jpr_jrl(is_jpr_jrl_cu),
 		.new_mem_read(mem_read_cu), .new_mem_to_reg(mem_to_reg_cu), .new_mem_write(mem_write_cu),
 		.new_alu_src(alu_src_cu), .new_reg_write(reg_write_cu), .new_pc_to_reg(pc_to_reg_cu),
-		.data_hazard_stall(/* 생각해보기 */), .control_hazard_flush(/* 생각해보기 */),
+		.data_hazard_stall(is_stall), .control_hazard_flush(is_j_or_b_taken),
 
 		.opcode_ex(opcode_ex), .func_code_ex(func_code_ex),
 		.pc_ex(pc_ex), .in_addr1_ex(in_addr1_ex), .in_addr2_ex(in_addr2_ex),
@@ -188,13 +237,28 @@ module cpu(clk, reset_n,
 		.alu_src_ex(alu_src_ex), .reg_write_ex(reg_write_ex), .pc_to_reg_ex(pc_to_reg_ex)
     );
 
+	HazardDetection hazard_detection (
+		.rs1_addr_id(in_addr1_ip), .rs2_addr_id(in_addr2_ip),
+		.opcode_id(opcode_ip), .func_code_id(func_code_ip),
+		.rd_addr_ex(rd_addr_ex), .mem_read_ex(mem_read_ex),
+
+		.is_stall(is_stall)
+	);
+
 	ForwardingUnit forwarding_unit (
 		.rs1_addr_ex(in_addr1_ex), .rs2_addr_ex(in_addr2_ex),
-		.rd_addr_mem(/**/), .reg_write_mem(/**/),
-		.rd_addr_wb(/**/), .reg_write_wb(/**/),
+		.rd_addr_mem(rd_addr_mem), .reg_write_mem(reg_write_mem),
+		.rd_addr_wb(rd_addr_wb), .reg_write_wb(reg_write_wb),
 		
 		.forward_a(forward_a), .forward_b(forward_b)
 	);
+
+	// register 에 wb 될 애들을 써야 함.
+	// in1 부터
+	// ADI, ORI, LHI: alu_result_mem
+	// LWD: 고려안해도 됨! 어차피 stall
+	// ALU_OP except JRL: alu_result_mem
+	// JAL, JRL: !!! $2 = PC + 1.
 
 	Mux3to1 forward_a_mux (
 		.in0(reg_data1_ex), .in1(/* */), .in2(/* */), .sel(forward_a),
@@ -244,6 +308,54 @@ module cpu(clk, reset_n,
 // 0: Bxx. pc + offset + 1 (with distinct Adder)
 // 1: JMP, JAL: extended_output_ex 그대로.
 // 2: JPR, JRL: rs 그대로
+
+
+	EXMEMPipeline EX_MEM_pipeline (
+		.clk(clk), .reset_n(reset_n),
+		.new_opcode(opcode_ex), .new_func_code(func_code_ex),
+		.new_pc(pc_ex), 
+		.new_j_or_b_pc_candidate(j_or_b_pc_mux_out), 
+		.new_bcond(bcond_alu), .new_alu_result(alu_result_alu),
+		.new_forwarded_data1(forward_a_out), .new_forwarded_data2(forward_b_out), .new_rd_addr(rd_addr_ex),
+		.new_is_branch(is_branch_ex), .new_is_jmp_jal(is_jmp_jal_ex), .new_is_jpr_jrl(is_jpr_jrl_ex),
+		.new_mem_read(mem_read_ex), .new_mem_to_reg(mem_to_reg_ex),
+		.new_mem_write(mem_write_ex), .new_reg_write(reg_write_ex), .new_pc_to_reg(pc_to_reg_ex),
+		.control_hazard_flush(is_j_or_b_taken),
+
+		.opcode_mem(opcode_mem), .func_code_mem(func_code_mem),
+		.pc_mem(pc_mem),
+		.j_or_b_pc_candidate_mem(j_or_b_pc_candidate_mem),
+		.bcond_mem(bcond_mem), .alu_result_mem(alu_result_mem),
+		.forwarded_data1_mem(forwarded_data1_mem), .forwarded_data2_mem(forwarded_data2_mem), .rd_addr_mem(rd_addr_mem),
+		.is_branch_mem(is_branch_mem), .is_jmp_jal_mem(is_jmp_jal_mem), .is_jpr_jrl_mem(is_jpr_jrl_mem),
+		.mem_read_mem(mem_read_mem), .mem_to_reg_mem(mem_to_reg_mem), .mem_write_mem(mem_write_mem),
+		.reg_write_mem(reg_write_mem), .pc_to_reg_mem(pc_to_reg_mem)
+	);
+
+	JorBTakenUnit j_or_b_taken_unit (
+		.is_branch(is_branch_mem), .is_jmp_jal(is_jmp_jal_mem),
+		.is_jpr_jrl(is_jpr_jrl_mem), .bcond(bcond_mem),
+
+        .is_j_or_b_taken(is_j_or_b_taken)
+	);
+
+	MEMWBPipeline MEM_WB_pipeline (
+		.clk(clk), .reset_n(reset_n),
+		.new_opcode(opcode_mem), .new_func_code(func_code_mem),
+		.new_pc(pc_mem), .new_alu_result(alu_result_mem), .new_mem_data(data2),
+		.new_forwarded_data1(forwarded_data1_mem), .new_rd_addr(rd_addr_mem),
+		.new_mem_to_reg(mem_to_reg_mem), .new_reg_write(reg_write_mem), .new_pc_to_reg(pc_to_reg_mem),
+		
+		.opcode_wb(opcode_wb), .func_code_wb(func_code_wb),
+		.pc_wb(pc_wb), .alu_result_wb(alu_result_wb), .mem_data_wb(mem_data_wb),
+		.forwarded_data1_wb(forwarded_data1_wb), .rd_addr_wb(rd_addr_wb),
+		.mem_to_reg_wb(mem_to_reg_wb), .reg_write_wb(reg_write_wb), .pc_to_reg_wb(pc_to_reg_wb)
+	);
+
+	Mux2to1 mem_to_reg_mux (
+		.in0(alu_result_wb), .in1(mem_data_wb), .sel(mem_to_reg_wb),
+		.out(mem_to_reg_out)
+	);
 
 
 	initial begin
@@ -693,7 +805,6 @@ module MEMWBPipeline(clk, reset_n,
 					 pc_wb, alu_result_wb, mem_data_wb,
 					 forwarded_data1_wb, rd_addr_wb,
 					 mem_to_reg_wb, reg_write_wb, pc_to_reg_wb
-
 );
 	input wire clk;
 	input wire reset_n;
