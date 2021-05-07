@@ -5,17 +5,26 @@
 			//	requirements in the Active-HDL simulator 
 
 module Memory(clk, reset_n, read_m1, address1, data1, read_m2, write_m2, address2, data2);
-	input wire clk;
-	input wire reset_n;
+	input clk;
+	wire clk;
+	input reset_n;
+	wire reset_n;
 	
-	input wire read_m1;
-	input wire [`WORD_SIZE-1:0] address1;
-	output reg data1;
+	input read_m1;
+	wire read_m1;
+	input [`WORD_SIZE-1:0] address1;
+	wire [`WORD_SIZE-1:0] address1;
+	output data1;
+	reg [`WORD_SIZE-1:0] data1;
 	
-	input wire read_m2;
-	input wire write_m2;
-	input wire [`WORD_SIZE-1:0] address2;
-	inout wire data2;
+	input read_m2;
+	wire read_m2;
+	input write_m2;
+	wire write_m2;
+	input [`WORD_SIZE-1:0] address2;
+	wire [`WORD_SIZE-1:0] address2;
+	inout data2;
+	wire [`WORD_SIZE-1:0] data2;
 	
 	reg [`WORD_SIZE-1:0] memory [0:`MEMORY_SIZE-1];
 	reg [`WORD_SIZE-1:0] output_data2;
@@ -25,9 +34,9 @@ module Memory(clk, reset_n, read_m1, address1, data1, read_m2, write_m2, address
 	always@(posedge clk)
 		if(!reset_n)
 			begin
-				memory[16'h0] <= 16'h9023;
-				memory[16'h1] <= 16'h1;
-				memory[16'h2] <= 16'hffff;
+				memory[16'h0] <= 16'h9023; // JMP 23
+				memory[16'h1] <= 16'h1; // 
+				memory[16'h2] <= 16'hffff; //
 				memory[16'h3] <= 16'h0;
 				memory[16'h4] <= 16'h0;
 				memory[16'h5] <= 16'h0;
@@ -60,7 +69,7 @@ module Memory(clk, reset_n, read_m1, address1, data1, read_m2, write_m2, address
 				memory[16'h20] <= 16'h0;
 				memory[16'h21] <= 16'h0;
 				memory[16'h22] <= 16'h0;
-				memory[16'h23] <= 16'h6000;
+				memory[16'h23] <= 16'h6000; // LHI 0
 				memory[16'h24] <= 16'hf01c;
 				memory[16'h25] <= 16'h6100;
 				memory[16'h26] <= 16'hf41c;
@@ -227,9 +236,8 @@ module Memory(clk, reset_n, read_m1, address1, data1, read_m2, write_m2, address
 			end
 		else
 			begin
-				// 아래의 경우 memory 내부에서 internal forwarding이 일어남. 우리가 읽으려고 하는 메모리 주소에 누군가 쓰고 있을 경우, 쓸 데이터를 가져옴.
-				if(read_m1) data1 <= (write_m2 & address1==address2) ? data2 : memory[address1];
-				if(read_m2) output_data2 <= memory[address2];
-				if(write_m2) memory[address2] <= data2;															  
+				if(read_m1)data1 <= (write_m2 & address1==address2)?data2:memory[address1];
+				if(read_m2)output_data2 <= memory[address2];
+				if(write_m2)memory[address2] <= data2;															  
 			end
 endmodule

@@ -14,12 +14,10 @@
 
 
 module cpu(clk, reset_n,
-		   data1,
-		   data2, // inout
-
-		   read_m1, address1, read_m2, write_m2, address2,
-		   
-		    num_inst, output_port, is_halted);
+		   read_m1, address1, data1,
+		   read_m2, write_m2, address2, data2, // inout
+		   num_inst, output_port, is_halted
+	);
 
 	input clk;
 	input reset_n;
@@ -165,7 +163,6 @@ module cpu(clk, reset_n,
 	assign address2 = alu_result_mem;
 	assign data2 = write_m2 ? forwarded_data2_mem : `WORD_SIZE'bz;
 
-	assign num_inst = ;
 	assign is_halted = ((opcode_wb == `HLT_OP) && (func_code_wb == `INST_FUNC_HLT));
 
 	assign is_jal_jrl_mem = (opcode_mem == `JAL_OP) || ((opcode_mem == `JRL_OP) && (func_code_mem == `INST_FUNC_JRL));
@@ -326,7 +323,7 @@ module cpu(clk, reset_n,
 	PcMuxSelector pc_mux_selector (
 		.is_branch(is_branch_ex), .is_jmp_jal(is_jmp_jal_ex), .is_jpr_jrl(is_jpr_jrl_ex), .bcond(bcond_alu),
 					
-		.pc_mux_sel(pc_mux_sel),
+		.pc_mux_sel(pc_mux_sel)
 	);
 
 	ADDModule extended_output_plus_one_adder (
@@ -404,7 +401,7 @@ module cpu(clk, reset_n,
 		one = 1;
 
 		output_port = 0;
-		num_inst = -1;
+		num_inst = 0;
 
 	end
 
@@ -414,7 +411,7 @@ module cpu(clk, reset_n,
 		one <= 1;
 
 		output_port <= 0;
-		num_inst <= -1;
+		num_inst <= 0;
 	end
 
 	always @(posedge clk) begin
@@ -422,9 +419,14 @@ module cpu(clk, reset_n,
 			output_port <= forwarded_data1_wb;
 		end
 
-		if ((opcode_wb != 0) && (func_code_wb != 0)) begin
+		if (opcode_wb != 0) begin
 			num_inst <= (num_inst + 1);
 		end
+
+		if (is_stall == 0) begin
+			pc <= pc_next;
+		end
+
 	end
 
 endmodule
