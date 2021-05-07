@@ -25,8 +25,8 @@ module cpu(clk, reset_n,
 	output write_m2;
 	output [`WORD_SIZE-1:0] address2;
 
-	output [`WORD_SIZE-1:0] num_inst;
-	output [`WORD_SIZE-1:0] output_port;
+	output reg [`WORD_SIZE-1:0] num_inst;
+	output reg [`WORD_SIZE-1:0] output_port;
 	output is_halted;
 
 
@@ -87,6 +87,12 @@ module cpu(clk, reset_n,
 
     wire [1:0] forward_a;
     wire [1:0] forward_b;
+
+	wire [`WORD_SIZE-1:0] pc_mem_plus_1_out;
+	wire is_jal_jrl_mem;
+	wire is_jal_jrl_wb;
+	wire [`WORD_SIZE-1:0] dist1_forward_out;
+	wire [`WORD_SIZE-1:0] dist2_forward_out;
 
 	wire [`WORD_SIZE-1:0] forward_a_out;
 	wire [`WORD_SIZE-1:0] forward_b_out;
@@ -150,8 +156,10 @@ module cpu(clk, reset_n,
 	assign data2 = write_m2 ? forwarded_data2_mem : `WORD_SIZE'bz;
 
 	assign num_inst = ;
-	assign output_port = ;
-	assign is_halted = ;
+	assign is_halted = ((opcode_wb == `HLT_OP) && (func_code_wb == `INST_FUNC_HLT));
+
+	assign is_jal_jrl_mem = (opcode_mem == `JAL_OP) || ((opcode_mem == `JRL_OP) && (func_code_mem == `INST_FUNC_JRL));
+	assign is_jal_jrl_wb = (opcode_wb == `JAL_OP) || ((opcode_wb == `JRL_OP) && (func_code_wb == `INST_FUNC_JRL));
 
 
 	ADDModule pc_plus_1_adder (
@@ -260,13 +268,36 @@ module cpu(clk, reset_n,
 	// ALU_OP except JRL: alu_result_mem
 	// JAL, JRL: !!! $2 = PC + 1.
 
+	// TODO: dist 2 에서 오는 건, mem_to_reg mux 의 output 임
+	// in2
+	// ADI, ORI, LHI: alu_result_wb
+	// LWD: mem_data_wb
+	// ALU_OP except JRL: alu_result_wb
+	// JAL, JRL: !!! $2 = PC + 1.
+
+	ADDModule pc_mem_plus_1 (
+		.A(pc_mem), .B(one),
+		.C(pc_mem_plus_1_out)
+	);
+
+
+	Mux2to1 dist1_forward_mux (
+		.in0(alu_result_mem), .in1(pc_mem_plus_1_out), .sel(is_jal_jrl_mem),
+		.out(dist1_forward_out)
+	);
+	Mux2to1 dist2_forward_mux (
+		.in0(alu_result_wb), .in1(pc_wb_plus_1_out), .sel(is_jal_jrl_wb),
+		.out(dist2_forward_out)
+	);
+
+
 	Mux3to1 forward_a_mux (
-		.in0(reg_data1_ex), .in1(/* */), .in2(/* */), .sel(forward_a),
+		.in0(reg_data1_ex), .in1(dist1_forward_out), .in2(dist2_forward_out), .sel(forward_a),
     	.out(forward_a_out)
 	);
 
 	Mux3to1 forward_b_mux (
-		.in0(reg_data2_ex), .in1(/* */), .in2(/* */), .sel(forward_b),
+		.in0(reg_data2_ex), .in1(dist1_forward_out), .in2(dist2_forward_out), .sel(forward_b),
         .out(forward_b_out)
 	);
 
@@ -362,6 +393,9 @@ module cpu(clk, reset_n,
 		pc = 0;
 		one = 1;
 
+		output_port = 0;
+		num_inst = -1;
+
 	end
 
 
@@ -369,8 +403,19 @@ module cpu(clk, reset_n,
 		pc <= 0;
 		one <= 1;
 
+		output_port <= 0;
+		num_inst <= -1;
 	end
 
+	always @(posedge clk) begin
+		if ((opcode_wb == `WWD_OP) && (func_code_wb == `INST_FUNC_WWD)) begin
+			output_port <= forwarded_data1_wb;
+		end
+
+		if ((opcode_wb != 0) && (func_code_wb != 0)) begin
+			num_inst <= (num_inst + 1);
+		end
+	end
 
 endmodule
 

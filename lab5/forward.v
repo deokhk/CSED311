@@ -13,6 +13,9 @@ module ForwardingUnit(rs1_addr_ex, rs2_addr_ex,
     output wire [1:0] forward_a;
     output wire [1:0] forward_b;
 
+    // rt 안 쓰는 op 들
+    // NOT
+
     // 0 -> just rs1, rs2. No forwarding
     // 1 -> from mem. dist 1
     // 2 -> from wb. dist 2

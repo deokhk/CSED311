@@ -32,7 +32,7 @@ module ControlUnit (opcode, func_code,
     assign mem_to_reg = (opcode == `LWD_OP);
     assign mem_write = (opcode == `SWD_OP);
     assign alu_src = (opcode == `ADI_OP) || (opcode == `ORI_OP) || (opcode == `LHI_OP) || (opcode == `LWD_OP) || (opcode == `SWD_OP);
-    assign reg_write = ((opcode == `ADI_OP) || (opcode == `ORI_OP) || (opcode == `LHI_OP) || (opcode == `LWD_OP))
+    assign reg_write = ((opcode == `ADI_OP) || (opcode == `ORI_OP) || (opcode == `LHI_OP) || (opcode == `LWD_OP) || (opcode == `JAL_OP))
 					|| ((opcode == `ALU_OP) && (func_code != `INST_FUNC_JPR) && (func_code != `INST_FUNC_WWD) && (func_code != `INST_FUNC_HLT));
     assign pc_to_reg = (opcode == `JAL_OP) || ((opcode == `JRL_OP) && (func_code == `INST_FUNC_JRL));
 
