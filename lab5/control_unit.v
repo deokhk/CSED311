@@ -1,7 +1,7 @@
 `include "opcodes.v"
 
 
-module ControlUnit (opcode, func_code, clk, reset_n,
+module ControlUnit (opcode, func_code,
 
 					opcode_out, func_code_out,
 					is_branch, is_jmp_jal, is_jpr_jrl,
@@ -38,6 +38,7 @@ module ControlUnit (opcode, func_code, clk, reset_n,
 
 endmodule
 
+
 module JorBTakenUnit(is_branch, is_jmp_jal, is_jpr_jrl, bcond,
 
 					 is_j_or_b_taken);
@@ -50,5 +51,22 @@ module JorBTakenUnit(is_branch, is_jmp_jal, is_jpr_jrl, bcond,
     output wire is_j_or_b_taken;
 
 	assign is_j_or_b_taken = (is_branch && bcond) || (is_jmp_jal || is_jpr_jrl);
+
+endmodule
+
+
+module PcMuxSelector(is_branch, is_jmp_jal, is_jpr_jrl, bcond,
+                        
+                     pc_mux_sel);
+
+    input wire is_branch;
+    input wire is_jmp_jal;
+    input wire is_jpr_jrl;
+    input wire bcond;
+
+    output wire [1:0] pc_mux_sel;
+
+    
+    assign pc_mux_sel = (is_branch & bcond) ? 2'b00 : (is_jmp_jal ? 2'b01 : (is_jpr_jrl ? 2'b10 : 2'b00));
 
 endmodule

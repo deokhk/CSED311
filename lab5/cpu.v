@@ -34,11 +34,82 @@ module cpu(clk, reset_n,
 	wire [`WORD_SIZE-1:0] pc_next;
 
 	wire is_j_or_b_taken;
+	wire [`WORD_SIZE-1:0] pc_id;
+	wire [`WORD_SIZE-1:0] inst_id;
+
+    wire [3:0] opcode_ip;
+    wire [1:0] in_addr1_ip;
+    wire [1:0] in_addr2_ip;
+    wire [1:0] write_addr_ip;
+    wire [5:0] func_code_ip;
+    wire [7:0] immediate_and_offset_ip;
+    wire [11:0] target_address_ip;
+
+	wire [3:0] opcode_out_cu;
+	wire [5:0] func_code_out_cu;
+	wire is_branch_cu;
+	wire is_jmp_jal_cu;
+	wire is_jpr_jrl_cu;
+	wire mem_read_cu;
+	wire mem_to_reg_cu;
+	wire mem_write_cu;
+	wire alu_src_cu;
+	wire reg_write_cu;
+	wire pc_to_reg_cu;
+
+    wire [15:0] extended_output_ed;
+
+	wire [15:0] write_data;
+	wire [`WORD_SIZE-1:0] reg_data1_rf;
+	wire [`WORD_SIZE-1:0] reg_data2_rf;
+
+	wire [3:0] opcode_ex;
+	wire [5:0] func_code_ex;
+	wire [`WORD_SIZE-1:0] pc_ex;
+	wire [1:0] in_addr1_ex;
+	wire [1:0] in_addr2_ex;
+	wire [`WORD_SIZE-1:0] reg_data1_ex;
+	wire [`WORD_SIZE-1:0] reg_data2_ex;
+	wire [`WORD_SIZE-1:0] extended_output_ex;
+	wire [1:0] rd_addr_ex;
+	wire is_branch_ex;
+	wire is_jmp_jal_ex;
+	wire is_jpr_jrl_ex;
+	wire mem_read_ex;
+	wire mem_to_reg_ex;
+	wire mem_write_ex;
+	wire alu_src_ex;
+	wire reg_write_ex;
+	wire pc_to_reg_ex;
+
+    wire [1:0] forward_a;
+    wire [1:0] forward_b;
+
+	wire [`WORD_SIZE-1:0] forward_a_out;
+	wire [`WORD_SIZE-1:0] forward_b_out;
+	wire [`WORD_SIZE-1:0] alu_src_mux_out;
+
+	wire [`WORD_SIZE-1:0] alu_result_alu;
+	wire overflow_flag_alu; 
+	wire bcond_alu;
+
+	wire [1:0] pc_mux_sel;
+
+	wire [`WORD_SIZE-1:0] extended_output_plus_1;
+	wire [`WORD_SIZE-1:0] pc_plus_offset;
+	wire [`WORD_SIZE-1:0] j_or_b_pc_mux_out;
+
+
+
+
 
 	reg [`WORD_SIZE-1:0] pc;
 	reg [`WORD_SIZE-1:0] one;
 
+
 	// TODO: JorBTaken 을 control_hazard_flush 로 assign
+	assign read_m1 = reset_n;
+	assign address1 = pc;
 
 	ADDModule pc_plus_1_adder (
 		.A(pc), .B(one),
@@ -51,12 +122,127 @@ module cpu(clk, reset_n,
 
 
 	IFIDPipeline IF_ID_pipeline (
-		.clk(clk), .reset_n(reset_n), 
+		.clk(clk), .reset_n(reset_n),
 		.new_pc(pc), .new_inst(data1),
-		.data_hazard_stall(), .control_hazard_flush(is_j_or_b_taken),
+		.data_hazard_stall(/*   */), .control_hazard_flush(is_j_or_b_taken),
 
-		.pc_id(), .inst_id()
+		.pc_id(pc_id), .inst_id(inst_id)
 	);
+
+	InstParser inst_parser (
+		.inst(inst_id),
+
+		.opcode(opcode_ip), .in_addr1(in_addr1_ip), .in_addr2(in_addr2_ip),
+		.write_addr(write_addr_ip), .func_code(func_code_ip),
+		.immediate_and_offset(immediate_and_offset_ip), .target_address(target_address_ip)
+	);
+
+	ControlUnit control_unit (
+		.opcode(opcode_ip), .func_code(func_code_ip),
+
+		.opcode_out(opcode_out_cu), .func_code_out(func_code_out_cu),
+		.is_branch(is_branch_cu), .is_jmp_jal(is_jmp_jal_cu), .is_jpr_jrl(is_jpr_jrl_cu),
+		.mem_read(mem_read_cu), .mem_to_reg(mem_to_reg_cu), .mem_write(mem_write_cu),
+		.alu_src(alu_src_cu), .reg_write(reg_write_cu), .pc_to_reg(pc_to_reg_cu)
+	);
+
+	ExtendDelegator extend_delegator (
+		.pc(pc_id), .opcode(opcode_ip),
+		.immediate_and_offset(immediate_and_offset_ip), .target_address(target_address_ip),
+
+		.extended_output(extended_output_ed)
+	);
+
+	Mux2to1 wb_mux (
+		.in0(/* output of mem_to_reg mux*/), .in1(/* pc_wb or pc_wb+1 */), .sel(/* pc_to_reg_wb */),
+		.out(write_data)
+	);
+
+	RegisterFile register_file (
+		.clk(clk), .reset_n(reset_n),
+		.in_addr1(in_addr1_ip), .in_addr2(in_addr2_ip), .write_addr(write_addr_ip),
+		.write_data(write_data), .reg_write_signal(/* reg_write_wb */),
+
+		.reg_data1(reg_data1_rf), .reg_data2(reg_data2_rf)
+	);
+
+	IDEXPipeline ID_EX_pipeline (
+		.clk(clk), .reset_n(reset_n),
+		.new_opcode(opcode_out_cu), .new_func_code(func_code_out_cu),
+		.new_pc(pc_id), .new_in_addr1(in_addr1_ip), .new_in_addr2(in_addr2_ip),
+		.new_reg_data1(reg_data1_rf), .new_reg_data2(reg_data2_rf),
+		.new_extended_output(extended_output_ed), .new_rd_addr(write_addr_ip),
+		.new_is_branch(is_branch_cu), .new_is_jmp_jal(is_jmp_jal_cu), .new_is_jpr_jrl(is_jpr_jrl_cu),
+		.new_mem_read(mem_read_cu), .new_mem_to_reg(mem_to_reg_cu), .new_mem_write(mem_write_cu),
+		.new_alu_src(alu_src_cu), .new_reg_write(reg_write_cu), .new_pc_to_reg(pc_to_reg_cu),
+		.data_hazard_stall(/* 생각해보기 */), .control_hazard_flush(/* 생각해보기 */),
+
+		.opcode_ex(opcode_ex), .func_code_ex(func_code_ex),
+		.pc_ex(pc_ex), .in_addr1_ex(in_addr1_ex), .in_addr2_ex(in_addr2_ex),
+		.reg_data1_ex(reg_data1_ex), .reg_data2_ex(reg_data2_ex),
+		.extended_output_ex(extended_output_ex), .rd_addr_ex(rd_addr_ex),
+		.is_branch_ex(is_branch_ex), .is_jmp_jal_ex(is_jmp_jal_ex), .is_jpr_jrl_ex(is_jpr_jrl_ex),
+		.mem_read_ex(mem_read_ex), .mem_to_reg_ex(mem_to_reg_ex), .mem_write_ex(mem_write_ex),
+		.alu_src_ex(alu_src_ex), .reg_write_ex(reg_write_ex), .pc_to_reg_ex(pc_to_reg_ex)
+    );
+
+	ForwardingUnit forwarding_unit (
+		.rs1_addr_ex(in_addr1_ex), .rs2_addr_ex(in_addr2_ex),
+		.rd_addr_mem(/**/), .reg_write_mem(/**/),
+		.rd_addr_wb(/**/), .reg_write_wb(/**/),
+		
+		.forward_a(forward_a), .forward_b(forward_b)
+	);
+
+	Mux3to1 forward_a_mux (
+		.in0(reg_data1_ex), .in1(/* */), .in2(/* */), .sel(forward_a),
+    	.out(forward_a_out)
+	);
+
+	Mux3to1 forward_b_mux (
+		.in0(reg_data2_ex), .in1(/* */), .in2(/* */), .sel(forward_b),
+        .out(forward_b_out)
+	);
+
+	Mux2to1 alu_src_mux (
+		.in0(forward_b_out), .in1(extended_output_ex), .sel(alu_src_ex),
+        .out(alu_src_mux_out)
+	);
+
+	ALU alu (
+		.alu_input_1(forward_a_out), .alu_input_2(alu_src_mux_out),
+		.opcode(opcode_ex), .func_code(func_code_ex),
+
+        .alu_result(alu_result_alu), .overflow_flag(overflow_flag_alu), .bcond(bcond_alu)
+	);
+
+	PcMuxSelector pc_mux_selector (
+		.is_branch(is_branch_ex), .is_jmp_jal(is_jmp_jal_ex), .is_jpr_jrl(is_jpr_jrl_ex), .bcond(bcond_alu),
+					
+		.pc_mux_sel(pc_mux_sel),
+	);
+
+	ADDModule extended_output_plus_one_adder (
+		.A(extended_output_ex), .B(one),
+		.C(extended_output_plus_1)
+	);
+
+	ADDModule pc_plus_offset_adder (
+		.A(pc_ex), .B(extended_output_plus_1),
+		.C(pc_plus_offset)
+	);
+
+	Mux3to1 j_or_b_pc_mux (
+		.in0(pc_plus_offset), .in1(extended_output_ex), .in2(forward_a_out), .sel(pc_mux_sel),
+        .out(j_or_b_pc_mux_out)
+	);
+
+
+// PC MUX
+// 0: Bxx. pc + offset + 1 (with distinct Adder)
+// 1: JMP, JAL: extended_output_ex 그대로.
+// 2: JPR, JRL: rs 그대로
+
 
 	initial begin
 		pc = 0;
@@ -124,7 +310,8 @@ endmodule
 
 module IDEXPipeline(clk, reset_n,
 					new_opcode, new_func_code,
-					new_pc, new_reg_data1, new_reg_data2,
+					new_pc, new_in_addr1, new_in_addr2,
+					new_reg_data1, new_reg_data2,
 					new_extended_output, new_rd_addr,
 					new_is_branch, new_is_jmp_jal, new_is_jpr_jrl,
 					new_mem_read, new_mem_to_reg, new_mem_write,
@@ -132,7 +319,8 @@ module IDEXPipeline(clk, reset_n,
 					data_hazard_stall, control_hazard_flush,
 
 					opcode_ex, func_code_ex,
-					pc_ex, reg_data1_ex, reg_data2_ex,
+					pc_ex, in_addr1_ex, in_addr2_ex,
+					reg_data1_ex, reg_data2_ex,
 					extended_output_ex, rd_addr_ex,
 					is_branch_ex, is_jmp_jal_ex, is_jpr_jrl_ex,
 					mem_read_ex, mem_to_reg_ex, mem_write_ex,
@@ -144,6 +332,8 @@ module IDEXPipeline(clk, reset_n,
 	input wire [3:0] new_opcode;
 	input wire [5:0] new_func_code;
 	input wire [`WORD_SIZE-1:0] new_pc;
+	input wire [1:0] new_in_addr1;
+	input wire [1:0] new_in_addr2;
 	input wire [`WORD_SIZE-1:0] new_reg_data1;
 	input wire [`WORD_SIZE-1:0] new_reg_data2;
 	input wire [`WORD_SIZE-1:0] new_extended_output;
@@ -165,6 +355,8 @@ module IDEXPipeline(clk, reset_n,
 	output wire [3:0] opcode_ex;
 	output wire [5:0] func_code_ex;
 	output wire [`WORD_SIZE-1:0] pc_ex;
+	output wire [1:0] in_addr1_ex;
+	output wire [1:0] in_addr2_ex;
 	output wire [`WORD_SIZE-1:0] reg_data1_ex;
 	output wire [`WORD_SIZE-1:0] reg_data2_ex;
 	output wire [`WORD_SIZE-1:0] extended_output_ex;
@@ -184,6 +376,8 @@ module IDEXPipeline(clk, reset_n,
 	reg [3:0] opcode;
 	reg [5:0] func_code;
 	reg [`WORD_SIZE-1:0] pc;
+	reg [1:0] in_addr1;
+	reg [1:0] in_addr2;
 	reg [`WORD_SIZE-1:0] reg_data1;
 	reg [`WORD_SIZE-1:0] reg_data2;
 	reg [`WORD_SIZE-1:0] extended_output;
@@ -202,6 +396,8 @@ module IDEXPipeline(clk, reset_n,
 	assign opcode_ex = opcode;
 	assign func_code_ex = func_code;
 	assign pc_ex = pc;
+	assign in_addr1_ex = in_addr1;
+	assign in_addr2_ex = in_addr2;
 	assign reg_data1_ex = reg_data1;
 	assign reg_data2_ex = reg_data2;
 	assign extended_output_ex = extended_output;
@@ -221,6 +417,8 @@ module IDEXPipeline(clk, reset_n,
 		opcode = 0;
 		func_code = 0;
 		pc = 0;
+		in_addr1 = 0;
+		in_addr2 = 0;
 		reg_data1 = 0;
 		reg_data2 = 0;
 		extended_output = 0;
@@ -242,6 +440,8 @@ module IDEXPipeline(clk, reset_n,
 		opcode <= 0;
 		func_code <= 0;
 		pc <= 0;
+		in_addr1 <= 0;
+		in_addr2 <= 0;
 		reg_data1 <= 0;
 		reg_data2 <= 0;
 		extended_output <= 0;
@@ -277,6 +477,8 @@ module IDEXPipeline(clk, reset_n,
 			opcode <= new_opcode;
 			func_code <= new_func_code;
 			pc <= new_pc;
+			in_addr1 <= new_in_addr1;
+			in_addr2 <= new_in_addr2;
 			reg_data1 <= new_reg_data1;
 			reg_data2 <= new_reg_data2;
 			extended_output <= new_extended_output;
@@ -299,7 +501,9 @@ endmodule
 
 module EXMEMPipeline(clk, reset_n,
 					 new_opcode, new_func_code,
-					 new_pc_candidate, new_bcond, new_alu_result,
+					 new_pc, // 원래대로 proceed 하는 original pc
+					 new_j_or_b_pc_candidate, // j_or_b_pc_mux 에서 나오는 output
+					 new_bcond, new_alu_result,
 					 new_forwarded_data1, new_forwarded_data2, new_rd_addr,
 					 new_is_branch, new_is_jmp_jal, new_is_jpr_jrl,
 					 new_mem_read, new_mem_to_reg,
@@ -307,7 +511,9 @@ module EXMEMPipeline(clk, reset_n,
 					 control_hazard_flush,
 					 
 					 opcode_mem, func_code_mem,
- 					 pc_candidate_mem, bcond_mem, alu_result_mem,
+					 pc_mem,
+ 					 j_or_b_pc_candidate_mem,
+					 bcond_mem, alu_result_mem,
 					 forwarded_data1_mem, forwarded_data2_mem, rd_addr_mem,
 					 is_branch_mem, is_jmp_jal_mem, is_jpr_jrl_mem,
 					 mem_read_mem, mem_to_reg_mem, mem_write_mem,
@@ -318,7 +524,8 @@ module EXMEMPipeline(clk, reset_n,
 	input wire reset_n;
 	input wire [3:0] new_opcode;
 	input wire [5:0] new_func_code;
-	input wire [`WORD_SIZE-1:0] new_pc_candidate;
+	input wire [`WORD_SIZE-1:0] new_pc;
+	input wire [`WORD_SIZE-1:0] new_j_or_b_pc_candidate;
 	input wire new_bcond;
 	input wire [`WORD_SIZE-1:0] new_alu_result;
 	input wire [`WORD_SIZE-1:0] new_forwarded_data1;
@@ -335,9 +542,11 @@ module EXMEMPipeline(clk, reset_n,
 	input wire new_pc_to_reg;
 	input wire control_hazard_flush;
 
+
 	output wire [3:0] opcode_mem;
 	output wire [5:0] func_code_mem;
-	output wire [`WORD_SIZE-1:0] pc_candidate_mem;
+	output wire [`WORD_SIZE-1:0] pc_mem;
+	output wire [`WORD_SIZE-1:0] j_or_b_pc_candidate_mem;
 	output wire bcond_mem;
 	output wire [`WORD_SIZE-1:0] alu_result_mem;
 	output wire [`WORD_SIZE-1:0] forwarded_data1_mem;
@@ -355,7 +564,8 @@ module EXMEMPipeline(clk, reset_n,
 
 	reg [3:0] opcode;
 	reg [5:0] func_code;
-	reg [`WORD_SIZE-1:0] pc_candidate;
+	reg [`WORD_SIZE-1:0] pc;
+	reg [`WORD_SIZE-1:0] j_or_b_pc_candidate;
 	reg bcond;
 	reg [`WORD_SIZE-1:0] alu_result;
 	reg [`WORD_SIZE-1:0] forwarded_data1;
@@ -372,7 +582,8 @@ module EXMEMPipeline(clk, reset_n,
 
 	assign opcode_mem = opcode;
 	assign func_code_mem = func_code;
-	assign pc_candidate_mem = pc_candidate;
+	assign pc_mem = pc;
+	assign j_or_b_pc_candidate_mem = j_or_b_pc_candidate;
 	assign bcond_mem = bcond;
 	assign alu_result_mem = alu_result;
 	assign forwarded_data1_mem = forwarded_data1;
@@ -391,7 +602,8 @@ module EXMEMPipeline(clk, reset_n,
 	initial begin
 		opcode = 0;
 		func_code = 0;
-		pc_candidate = 0;
+		pc = 0;
+		j_or_b_pc_candidate = 0;
 		bcond = 0;
 		alu_result = 0;
 		forwarded_data1 = 0;
@@ -412,7 +624,8 @@ module EXMEMPipeline(clk, reset_n,
 	always @(posedge reset_n) begin
 		opcode <= 0;
 		func_code <= 0;
-		pc_candidate <= 0;
+		pc <= 0;
+		j_or_b_pc_candidate <= 0;
 		bcond <= 0;
 		alu_result <= 0;
 		forwarded_data1 <= 0;
@@ -446,7 +659,8 @@ module EXMEMPipeline(clk, reset_n,
 		else begin // no control hazard, no data hazard
 			opcode <= new_opcode;
 			func_code <= new_func_code;
-			pc_candidate <= new_pc_candidate;
+			pc <= new_pc;
+			j_or_b_pc_candidate <= new_j_or_b_pc_candidate;
 			bcond <= new_bcond;
 			alu_result <= new_alu_result;
 			forwarded_data1 <= new_forwarded_data1;

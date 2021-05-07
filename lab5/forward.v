@@ -1,6 +1,6 @@
 module ForwardingUnit(rs1_addr_ex, rs2_addr_ex,
                       rd_addr_mem, reg_write_mem,
-                      rd_addr_wb, reg_write_wb
+                      rd_addr_wb, reg_write_wb,
                       
                       forward_a, forward_b);
     input wire [1:0] rs1_addr_ex;

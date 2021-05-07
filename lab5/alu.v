@@ -3,10 +3,25 @@
 `include "module_bitwise.v"
 `include "module_others.v"
 
+// 원하는 것:
+// Bxx: extended_output + 1 이 next_pc_candidate
+// JAL: $2 = PC+1. pc <- extended_output
+// JRL: $2 = PC+1. pc <- rs
+
+// Bxx -> PC + offset + 1 (with distinct Adder)
+// JMP: PC <- extended output
+// JAL: $2 = PC+1. PC <- extended output
+// JPR: PC <- rs
+// JRL: $2 = PC+1. PC <- rs
+
+// PC MUX
+// 0: Bxx. pc + offset + 1 (with distinct Adder)
+// 1: JMP, JAL: extended_output_ex 그대로.
+// 2: JPR, JRL: rs 그대로
 
 module ALU (alu_input_1, alu_input_2, opcode, func_code,
 			
-			alu_out, overflow_flag, bcond);
+			alu_result, overflow_flag, bcond);
 
 	input [`WORD_SIZE-1:0] alu_input_1;
 	input [`WORD_SIZE-1:0] alu_input_2;
@@ -88,9 +103,9 @@ module ALU (alu_input_1, alu_input_2, opcode, func_code,
 					`INST_FUNC_TCP:begin alu_result = tcp_out; bcond = 0; overflow_flag = 0; end
 					`INST_FUNC_SHL:begin alu_result = shl_out; bcond = 0; overflow_flag = 0; end
 					`INST_FUNC_SHR:begin alu_result = shr_out; bcond = 0; overflow_flag = 0; end
-					`INST_FUNC_JPR:begin alu_result = alu_input_1; bcond = 0; overflow_flag = 0; end //
-					`INST_FUNC_JRL:begin alu_result = alu_input_1; bcond = 0; overflow_flag = 0; end
-					`INST_FUNC_WWD:begin alu_result = alu_input_1; bcond = 0; overflow_flag = 0; end
+					`INST_FUNC_JPR:begin alu_result = 0; bcond = 0; overflow_flag = 0; end // pc <- rs 는 따로 해줌, 
+					`INST_FUNC_JRL:begin alu_result = 0; bcond = 0; overflow_flag = 0; end // pc <- rs 는 따로 해줌, $2 = PC+1 도 따로 해줌.
+					`INST_FUNC_WWD:begin alu_result = 0; bcond = 0; overflow_flag = 0; end
 					`INST_FUNC_HLT:begin alu_result = 0; bcond = 0; overflow_flag = 0; end
 					default:begin alu_result = 0; bcond = 0; overflow_flag = 0; end
 				endcase
@@ -107,6 +122,9 @@ module ALU (alu_input_1, alu_input_2, opcode, func_code,
 			`LHI_OP:begin alu_result = alu_input_2; bcond = 0; overflow_flag = 0; end
 			`LWD_OP:begin alu_result = add_out; bcond = 0; overflow_flag = add_flag; end
 			`SWD_OP:begin alu_result = add_out; bcond = 0; overflow_flag = add_flag; end
+
+			`JMP_OP:begin alu_result = 0; bcond = 0; overflow_flag = 0; end // PC <- extended output 따로 해줌
+			`JAL_OP:begin alu_result = 0; bcond = 0; overflow_flag = 0; end // PC <- extended output 따로 해줌. $2 = PC+1 도 wb_mux 에서 따로 해줌.
 
 			default:begin alu_result = 0; bcond = 0; overflow_flag = 0; end
 		endcase
