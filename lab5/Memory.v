@@ -86,8 +86,8 @@ module Memory(clk, reset_n, read_m1, address1, data1, read_m2, write_m2, address
 				memory[16'h31] <= 16'h5502;
 				memory[16'h32] <= 16'hf41c;
 				memory[16'h33] <= 16'h5503;
-				memory[16'h34] <= 16'hf41c;
-				memory[16'h35] <= 16'hf2c0;
+				memory[16'h34] <= 16'hf41c; // WWD
+				memory[16'h35] <= 16'hf2c0; // ADD $3, $0, $2
 				memory[16'h36] <= 16'hfc1c;
 				memory[16'h37] <= 16'hf6c0;
 				memory[16'h38] <= 16'hfc1c;

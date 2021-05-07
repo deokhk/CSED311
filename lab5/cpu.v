@@ -16,7 +16,11 @@
 module cpu(clk, reset_n,
 		   read_m1, address1, data1,
 		   read_m2, write_m2, address2, data2, // inout
-		   num_inst, output_port, is_halted
+		   num_inst, output_port, is_halted,
+
+		   forward_a, forward_b,
+		   forward_a_out, forward_b_out, alu_src_mux_out, alu_result_alu,
+		   forwarded_data1_wb
 	);
 
 	input clk;
@@ -93,8 +97,8 @@ module cpu(clk, reset_n,
 
 	wire is_stall;
 
-    wire [1:0] forward_a;
-    wire [1:0] forward_b;
+    output wire [1:0] forward_a;
+    output wire [1:0] forward_b;
 
 	wire [`WORD_SIZE-1:0] pc_mem_plus_1_out;
 	wire is_jal_jrl_mem;
@@ -102,11 +106,11 @@ module cpu(clk, reset_n,
 	wire [`WORD_SIZE-1:0] dist1_forward_out;
 	wire [`WORD_SIZE-1:0] dist2_forward_out;
 
-	wire [`WORD_SIZE-1:0] forward_a_out;
-	wire [`WORD_SIZE-1:0] forward_b_out;
-	wire [`WORD_SIZE-1:0] alu_src_mux_out;
+	output wire [`WORD_SIZE-1:0] forward_a_out;
+	output wire [`WORD_SIZE-1:0] forward_b_out;
+	output wire [`WORD_SIZE-1:0] alu_src_mux_out;
 
-	wire [`WORD_SIZE-1:0] alu_result_alu;
+	output wire [`WORD_SIZE-1:0] alu_result_alu;
 	wire overflow_flag_alu; 
 	wire bcond_alu;
 
@@ -142,7 +146,7 @@ module cpu(clk, reset_n,
 	wire [`WORD_SIZE-1:0] pc_wb;
 	wire [`WORD_SIZE-1:0] alu_result_wb;
 	wire [`WORD_SIZE-1:0] mem_data_wb;
-	wire [`WORD_SIZE-1:0] forwarded_data1_wb;
+	output wire [`WORD_SIZE-1:0] forwarded_data1_wb;
 	wire [1:0] rd_addr_wb;
 	wire mem_to_reg_wb;
 	wire reg_write_wb;
