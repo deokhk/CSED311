@@ -34,9 +34,9 @@ module Memory(clk, reset_n, read_m1, address1, data1, read_m2, write_m2, address
 	always@(posedge clk)
 		if(!reset_n)
 			begin
-				memory[16'h0] <= 16'h9023; // JMP 23
-				memory[16'h1] <= 16'h1; // 
-				memory[16'h2] <= 16'hffff; //
+				memory[16'h0] <= 16'h9023;
+				memory[16'h1] <= 16'h1;
+				memory[16'h2] <= 16'hffff;
 				memory[16'h3] <= 16'h0;
 				memory[16'h4] <= 16'h0;
 				memory[16'h5] <= 16'h0;
@@ -69,7 +69,7 @@ module Memory(clk, reset_n, read_m1, address1, data1, read_m2, write_m2, address
 				memory[16'h20] <= 16'h0;
 				memory[16'h21] <= 16'h0;
 				memory[16'h22] <= 16'h0;
-				memory[16'h23] <= 16'h6000; // LHI 0
+				memory[16'h23] <= 16'h6000;
 				memory[16'h24] <= 16'hf01c;
 				memory[16'h25] <= 16'h6100;
 				memory[16'h26] <= 16'hf41c;
@@ -77,7 +77,7 @@ module Memory(clk, reset_n, read_m1, address1, data1, read_m2, write_m2, address
 				memory[16'h28] <= 16'hf81c;
 				memory[16'h29] <= 16'h6300;
 				memory[16'h2a] <= 16'hfc1c;
-				memory[16'h2b] <= 16'h4401; // ADI $0, $1, 1
+				memory[16'h2b] <= 16'h4401;
 				memory[16'h2c] <= 16'hf01c;
 				memory[16'h2d] <= 16'h4001;
 				memory[16'h2e] <= 16'hf01c;
@@ -86,8 +86,8 @@ module Memory(clk, reset_n, read_m1, address1, data1, read_m2, write_m2, address
 				memory[16'h31] <= 16'h5502;
 				memory[16'h32] <= 16'hf41c;
 				memory[16'h33] <= 16'h5503;
-				memory[16'h34] <= 16'hf41c; // WWD
-				memory[16'h35] <= 16'hf2c0; // ADD $3, $0, $2
+				memory[16'h34] <= 16'hf41c;
+				memory[16'h35] <= 16'hf2c0;
 				memory[16'h36] <= 16'hfc1c;
 				memory[16'h37] <= 16'hf6c0;
 				memory[16'h38] <= 16'hfc1c;
@@ -141,27 +141,27 @@ module Memory(clk, reset_n, read_m1, address1, data1, read_m2, write_m2, address
 				memory[16'h68] <= 16'hfc1c;
 				memory[16'h69] <= 16'hf8c7;
 				memory[16'h6a] <= 16'hfc1c;
-				memory[16'h6b] <= 16'h7801; // LWD $0, $2, VAR1
+				memory[16'h6b] <= 16'h7801;
 				memory[16'h6c] <= 16'hf01c;
 				memory[16'h6d] <= 16'h7902;
 				memory[16'h6e] <= 16'hf41c;
 				memory[16'h6f] <= 16'h8901;
 				memory[16'h70] <= 16'h8802;
-				memory[16'h71] <= 16'h7801; // LWD $0, $2, VAR1
+				memory[16'h71] <= 16'h7801;
 				memory[16'h72] <= 16'hf01c;
-				memory[16'h73] <= 16'h7902; // LWD $1, $2, VAR2
-				memory[16'h74] <= 16'hf41c; // WWD $1
-				memory[16'h75] <= 16'h9076; // JMP 76
-				memory[16'h76] <= 16'hf01c; // WWD $0
-				memory[16'h77] <= 16'h9079; // JMP 79
+				memory[16'h73] <= 16'h7902;
+				memory[16'h74] <= 16'hf41c;
+				memory[16'h75] <= 16'h9076;
+				memory[16'h76] <= 16'hf01c;
+				memory[16'h77] <= 16'h9079;
 				memory[16'h78] <= 16'hf01d;
-				memory[16'h79] <= 16'hf41c; // WWD $1
-				memory[16'h7a] <= 16'hb01; // BNE $2, $3, 1  <- 뛰면 안됨. $2 == $3 여야 함.
-				memory[16'h7b] <= 16'h907d; // JMP 7d
+				memory[16'h79] <= 16'hf41c;
+				memory[16'h7a] <= 16'hb01;
+				memory[16'h7b] <= 16'h907d;
 				memory[16'h7c] <= 16'hf01d;
-				memory[16'h7d] <= 16'hf01c; // WWD $0
-				memory[16'h7e] <= 16'h601; // BNE $1, $2, 7f
-				memory[16'h7f] <= 16'hf01d; // 
+				memory[16'h7d] <= 16'hf01c;
+				memory[16'h7e] <= 16'h601;
+				memory[16'h7f] <= 16'hf01d;
 				memory[16'h80] <= 16'hf41c;
 				memory[16'h81] <= 16'h1601;
 				memory[16'h82] <= 16'h9084;

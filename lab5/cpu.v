@@ -16,7 +16,7 @@
 module cpu(clk, reset_n,
 		   read_m1, address1, data1,
 		   read_m2, write_m2, address2, data2, // inout
-		   num_inst, output_port, is_halted,
+		   num_inst, output_port, is_halted
 
 );
 
@@ -72,7 +72,6 @@ module cpu(clk, reset_n,
 	wire [15:0] wb_mux_out;
 	wire [`WORD_SIZE-1:0] reg_data1_rf;
 	wire [`WORD_SIZE-1:0] reg_data2_rf;
-	wire [15:0] registers_rf [3:0]; // For debugging purpose
 
 	wire [3:0] opcode_ex;
 	wire [5:0] func_code_ex;
@@ -239,7 +238,7 @@ module cpu(clk, reset_n,
 		.write_data(wb_mux_out), // older
 		.reg_write_signal(reg_write_wb), // older
 
-		.reg_data1(reg_data1_rf), .reg_data2(reg_data2_rf), .registers(registers_rf)
+		.reg_data1(reg_data1_rf), .reg_data2(reg_data2_rf)
 	);
 
 	IDEXPipeline ID_EX_pipeline (
