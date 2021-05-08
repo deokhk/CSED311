@@ -23,7 +23,9 @@ module cpu(clk, reset_n,
 
 		   forward_a_out, forward_a,
 		   alu_src_mux_out, alu_result_alu,
-		   mem_data_wb, mem_to_reg_out, reg_write_wb
+		   mem_data_wb, mem_to_reg_out, reg_write_wb,
+
+		   j_or_b_pc_candidate_mem, bcond_mem
 
 );
 
@@ -127,8 +129,8 @@ module cpu(clk, reset_n,
 	output wire [3:0] opcode_mem;
 	wire [5:0] func_code_mem;
 	wire [`WORD_SIZE-1:0] pc_mem;
-	wire [`WORD_SIZE-1:0] j_or_b_pc_candidate_mem;
-	wire bcond_mem;
+	output wire [`WORD_SIZE-1:0] j_or_b_pc_candidate_mem;
+	output wire bcond_mem;
 	wire [`WORD_SIZE-1:0] alu_result_mem;
 	wire [`WORD_SIZE-1:0] forwarded_data1_mem;
 	wire [`WORD_SIZE-1:0] forwarded_data2_mem;
@@ -142,6 +144,9 @@ module cpu(clk, reset_n,
 	wire mem_write_mem;
 	wire reg_write_mem;
 	wire pc_to_reg_mem;
+
+	wire no_flush_condition;
+ 	wire control_hazard_flush;
 
 	wire is_j_or_b_taken;
 
@@ -162,6 +167,14 @@ module cpu(clk, reset_n,
 	reg [`WORD_SIZE-1:0] pc;
 	reg [`WORD_SIZE-1:0] one;
 
+	// NOTE: is_branch_mem && bcond_mem 이거가 이미 j_or_b_taken 인데?
+	assign no_flush_condition = ((pc_mem + 1) == j_or_b_pc_candidate_mem);
+	// no_flush_condition: 1 -> no flush
+	// no_flush_condition: 0 -> flush
+
+	assign control_hazard_flush = (is_j_or_b_taken && (!no_flush_condition)); // j_or_b_pc_candidate_mem
+	// opcode == Jxx && ((pc_mem + 1) == j_or_b_pc_candidate_mem)  -> No flush !!!!
+	// opcode == Bxx && ((pc_mem + 1) == j_or_b_pc_candidate_mem) && bcond_mem -> No flush !!!
 
 	assign read_m1 = reset_n;
 	assign address1 = pc;
@@ -182,7 +195,7 @@ module cpu(clk, reset_n,
 		.C(pc_plus_1)
 	);
 	Mux2to1 pc_mux (
-		.in0(pc_plus_1), .in1(j_or_b_pc_candidate_mem), .sel(is_j_or_b_taken),
+		.in0(pc_plus_1), .in1(j_or_b_pc_candidate_mem), .sel(control_hazard_flush),
 		.out(pc_next)
 	);
 
@@ -190,7 +203,7 @@ module cpu(clk, reset_n,
 	IFIDPipeline IF_ID_pipeline (
 		.clk(clk), .reset_n(reset_n),
 		.new_pc(pc), .new_inst(data1),
-		.data_hazard_stall(is_stall), .control_hazard_flush(is_j_or_b_taken),
+		.data_hazard_stall(is_stall), .control_hazard_flush(control_hazard_flush),
 
 		.pc_id(pc_id), .inst_id(inst_id)
 	);
@@ -249,7 +262,7 @@ module cpu(clk, reset_n,
 		.new_is_branch(is_branch_cu), .new_is_jmp_jal(is_jmp_jal_cu), .new_is_jpr_jrl(is_jpr_jrl_cu),
 		.new_mem_read(mem_read_cu), .new_mem_to_reg(mem_to_reg_cu), .new_mem_write(mem_write_cu),
 		.new_alu_src(alu_src_cu), .new_reg_write(reg_write_cu), .new_pc_to_reg(pc_to_reg_cu),
-		.data_hazard_stall(is_stall), .control_hazard_flush(is_j_or_b_taken),
+		.data_hazard_stall(is_stall), .control_hazard_flush(control_hazard_flush),
 
 		.opcode_ex(opcode_ex), .func_code_ex(func_code_ex),
 		.pc_ex(pc_ex), .in_addr1_ex(in_addr1_ex), .in_addr2_ex(in_addr2_ex),
@@ -367,7 +380,7 @@ module cpu(clk, reset_n,
 		.new_is_branch(is_branch_ex), .new_is_jmp_jal(is_jmp_jal_ex), .new_is_jpr_jrl(is_jpr_jrl_ex),
 		.new_mem_read(mem_read_ex), .new_mem_to_reg(mem_to_reg_ex),
 		.new_mem_write(mem_write_ex), .new_reg_write(reg_write_ex), .new_pc_to_reg(pc_to_reg_ex),
-		.control_hazard_flush(is_j_or_b_taken),
+		.control_hazard_flush(control_hazard_flush),
 
 		.opcode_mem(opcode_mem), .func_code_mem(func_code_mem),
 		.pc_mem(pc_mem),

@@ -58,6 +58,10 @@ module cpu_TB();
 	wire reg_write_wb;
 
 
+	wire [15:0] j_or_b_pc_candidate_mem;
+	wire bcond_mem;
+
+
 	// instantiate the unit under test
 	cpu UUT (clk, reset_n, read_m1, address1, data1, read_m2, write_m2, address2, data2, num_inst, output_port, is_halted,
 
@@ -66,7 +70,10 @@ module cpu_TB();
 
 			 		   forwarded_a_out, forward_a,
 		   alu_src_mux_out, alu_result_alu,
-		   mem_data_wb, mem_to_reg_out, reg_write_wb
+		   mem_data_wb, mem_to_reg_out, reg_write_wb,
+
+
+		   j_or_b_pc_candidate_mem, bcond_mem
 
 
 
