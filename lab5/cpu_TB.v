@@ -75,8 +75,6 @@ module cpu_TB();
 
 		   j_or_b_pc_candidate_mem, bcond_mem
 
-
-
 	);
 	Memory NUUT(!clk, reset_n, read_m1, address1, data1, read_m2, write_m2, address2, data2);
 

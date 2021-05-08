@@ -441,7 +441,7 @@ module cpu(clk, reset_n,
 			output_port <= forwarded_data1_wb;
 		end
 
-		if (opcode_wb != 0) begin
+		if (opcode_wb != `NOP_OP) begin
 			num_inst <= (num_inst + 1);
 		end
 
@@ -479,18 +479,18 @@ module IFIDPipeline(clk, reset_n,
 
 	initial begin
 		pc = 0;
-		inst = 0;
+		inst = 16'hd000;
 	end
 
 	always @(posedge reset_n) begin
 		pc <= 0;
-		inst <= 0;
+		inst <= 16'hd000;
 	end
 
 	always @(posedge clk) begin
 		if (control_hazard_flush) begin
-			pc <= 0;
-			inst <= 0;
+			pc <= 0; // TODO:
+			inst <= 16'hd000; // NOP op !!
 		end
 		else if (!data_hazard_stall) begin // no control hazard, no data hazard
 			pc <= new_pc;
@@ -607,7 +607,7 @@ module IDEXPipeline(clk, reset_n,
 
 
 	initial begin
-		opcode = 0;
+		opcode = `NOP_OP;
 		func_code = 0;
 		pc = 0;
 		in_addr1 = 0;
@@ -630,7 +630,7 @@ module IDEXPipeline(clk, reset_n,
 
 
 	always @(posedge reset_n) begin
-		opcode <= 0;
+		opcode <= `NOP_OP;
 		func_code <= 0;
 		pc <= 0;
 		in_addr1 <= 0;
@@ -653,7 +653,7 @@ module IDEXPipeline(clk, reset_n,
 
 	always @(posedge clk) begin
 		if (control_hazard_flush || data_hazard_stall) begin
-			opcode <= 0;
+			opcode <= `NOP_OP;
 			func_code <= 0;
 
 			is_branch <= 0;
@@ -793,7 +793,7 @@ module EXMEMPipeline(clk, reset_n,
 
 
 	initial begin
-		opcode = 0;
+		opcode = `NOP_OP;
 		func_code = 0;
 		pc = 0;
 		j_or_b_pc_candidate = 0;
@@ -815,7 +815,7 @@ module EXMEMPipeline(clk, reset_n,
 
 
 	always @(posedge reset_n) begin
-		opcode <= 0;
+		opcode <= `NOP_OP;
 		func_code <= 0;
 		pc <= 0;
 		j_or_b_pc_candidate <= 0;
@@ -837,7 +837,7 @@ module EXMEMPipeline(clk, reset_n,
 
 	always @(posedge clk) begin
 		if (control_hazard_flush) begin
-			opcode <= 0;
+			opcode <= `NOP_OP;
 			func_code <= 0;
 
 			is_branch <= 0;
@@ -937,7 +937,7 @@ module MEMWBPipeline(clk, reset_n,
 
 
 	initial begin
-		opcode = 0;
+		opcode = `NOP_OP;
 		func_code = 0;
 		pc = 0;
 		alu_result = 0;
@@ -952,7 +952,7 @@ module MEMWBPipeline(clk, reset_n,
 
 
 	always @(posedge reset_n) begin
-		opcode <= 0;
+		opcode <= `NOP_OP;
 		func_code <= 0;
 		pc <= 0;
 		alu_result <= 0;
