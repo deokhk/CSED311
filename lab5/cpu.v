@@ -18,14 +18,14 @@ module cpu(clk, reset_n,
 		   read_m2, write_m2, address2, data2, // inout
 		   num_inst, output_port, is_halted,
 
-		   forward_a, forward_b,
-		   forward_a_out, forward_b_out, alu_src_mux_out, alu_result_alu,
-		   forwarded_data1_wb, opcode_ex, func_code_ex,
+		   is_stall, opcode_ip, opcode_out_cu,
+		   opcode_ex, opcode_mem, opcode_wb,
 
-		   registers_rf, reg_data1_ex,
+		   forward_a_out, forward_a,
+		   alu_src_mux_out, alu_result_alu,
+		   mem_data_wb, mem_to_reg_out, reg_write_wb
 
-		   in_addr1_ip, rd_addr_wb, wb_mux_out, reg_data1_rf
-	);
+);
 
 	input clk;
 	input reset_n;
@@ -52,15 +52,15 @@ module cpu(clk, reset_n,
 	wire [`WORD_SIZE-1:0] pc_id;
 	wire [`WORD_SIZE-1:0] inst_id;
 
-    wire [3:0] opcode_ip;
-    output wire [1:0] in_addr1_ip;
+    output wire [3:0] opcode_ip;
+    wire [1:0] in_addr1_ip;
     wire [1:0] in_addr2_ip;
     wire [1:0] write_addr_ip;
     wire [5:0] func_code_ip;
     wire [7:0] immediate_and_offset_ip;
     wire [11:0] target_address_ip;
 
-	wire [3:0] opcode_out_cu;
+	output wire [3:0] opcode_out_cu;
 	wire [5:0] func_code_out_cu;
 	wire is_branch_cu;
 	wire is_jmp_jal_cu;
@@ -76,17 +76,17 @@ module cpu(clk, reset_n,
 
 	wire [`WORD_SIZE-1:0] pc_wb_plus_1_out;
 
-	output wire [15:0] wb_mux_out;
-	output wire [`WORD_SIZE-1:0] reg_data1_rf;
+	wire [15:0] wb_mux_out;
+	wire [`WORD_SIZE-1:0] reg_data1_rf;
 	wire [`WORD_SIZE-1:0] reg_data2_rf;
-	output wire [15:0] registers_rf [3:0];
+	wire [15:0] registers_rf [3:0]; // For debugging purpose
 
 	output wire [3:0] opcode_ex;
-	output wire [5:0] func_code_ex;
+	wire [5:0] func_code_ex;
 	wire [`WORD_SIZE-1:0] pc_ex;
 	wire [1:0] in_addr1_ex;
 	wire [1:0] in_addr2_ex;
-	output wire [`WORD_SIZE-1:0] reg_data1_ex;
+	wire [`WORD_SIZE-1:0] reg_data1_ex;
 	wire [`WORD_SIZE-1:0] reg_data2_ex;
 	wire [`WORD_SIZE-1:0] extended_output_ex;
 	wire [1:0] rd_addr_ex;
@@ -100,10 +100,10 @@ module cpu(clk, reset_n,
 	wire reg_write_ex;
 	wire pc_to_reg_ex;
 
-	wire is_stall;
+	output wire is_stall;
 
     output wire [1:0] forward_a;
-    output wire [1:0] forward_b;
+    wire [1:0] forward_b;
 
 	wire [`WORD_SIZE-1:0] pc_mem_plus_1_out;
 	wire is_jal_jrl_mem;
@@ -112,7 +112,7 @@ module cpu(clk, reset_n,
 	wire [`WORD_SIZE-1:0] dist2_forward_out;
 
 	output wire [`WORD_SIZE-1:0] forward_a_out;
-	output wire [`WORD_SIZE-1:0] forward_b_out;
+	wire [`WORD_SIZE-1:0] forward_b_out;
 	output wire [`WORD_SIZE-1:0] alu_src_mux_out;
 
 	output wire [`WORD_SIZE-1:0] alu_result_alu;
@@ -124,7 +124,7 @@ module cpu(clk, reset_n,
 	wire [`WORD_SIZE-1:0] pc_plus_offset;
 	wire [`WORD_SIZE-1:0] j_or_b_pc_mux_out;
 
-	wire [3:0] opcode_mem;
+	output wire [3:0] opcode_mem;
 	wire [5:0] func_code_mem;
 	wire [`WORD_SIZE-1:0] pc_mem;
 	wire [`WORD_SIZE-1:0] j_or_b_pc_candidate_mem;
@@ -145,18 +145,18 @@ module cpu(clk, reset_n,
 
 	wire is_j_or_b_taken;
 
-	wire [3:0] opcode_wb;
+	output wire [3:0] opcode_wb;
 	wire [5:0] func_code_wb;
 	wire [`WORD_SIZE-1:0] pc_wb;
 	wire [`WORD_SIZE-1:0] alu_result_wb;
-	wire [`WORD_SIZE-1:0] mem_data_wb;
-	output wire [`WORD_SIZE-1:0] forwarded_data1_wb;
-	output wire [1:0] rd_addr_wb;
+	output wire [`WORD_SIZE-1:0] mem_data_wb;
+	wire [`WORD_SIZE-1:0] forwarded_data1_wb;
+	wire [1:0] rd_addr_wb;
 	wire mem_to_reg_wb;
-	wire reg_write_wb;
+	output wire reg_write_wb;
 	wire pc_to_reg_wb;
 
-	wire [`WORD_SIZE-1:0] mem_to_reg_out;
+	output wire [`WORD_SIZE-1:0] mem_to_reg_out;
 
 
 	reg [`WORD_SIZE-1:0] pc;
@@ -233,7 +233,7 @@ module cpu(clk, reset_n,
 	RegisterFile register_file (
 		.clk(clk), .reset_n(reset_n),
 		.in_addr1(in_addr1_ip), .in_addr2(in_addr2_ip), // younger
-		.write_addr(rd_addr_wb), // older
+		.write_addr(rd_addr_wb), // older // TODO: LWD 일 때는 rt_addr_wb 이 들어가야 하는 거 아님?
 		.write_data(wb_mux_out), // older
 		.reg_write_signal(reg_write_wb), // older
 
@@ -301,7 +301,8 @@ module cpu(clk, reset_n,
 		.out(dist1_forward_out)
 	);
 	Mux2to1 dist2_forward_mux (
-		.in0(alu_result_wb), .in1(pc_wb_plus_1_out), .sel(is_jal_jrl_wb),
+		// TODO: in0 이거 mem_reg_out 아님?
+		.in0(mem_to_reg_out), .in1(pc_wb_plus_1_out), .sel(is_jal_jrl_wb),
 		.out(dist2_forward_out)
 	);
 

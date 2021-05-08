@@ -22,37 +22,54 @@ module cpu_TB();
 	wire [`WORD_SIZE-1:0] output_port;	// this will be used for a "WWD" instruction
 	wire is_halted;				// set if the cpu is halted
 
-    wire [1:0] forward_a;
-    wire [1:0] forward_b;
-	wire [`WORD_SIZE-1:0] forward_a_out;
-	wire [`WORD_SIZE-1:0] forward_b_out;
-	wire [`WORD_SIZE-1:0] alu_src_mux_out;
-	wire [`WORD_SIZE-1:0] alu_result_alu;
-	wire [`WORD_SIZE-1:0] forwarded_data1_wb;
 
+
+    // wire [1:0] forward_a;
+    // wire [1:0] forward_b;
+	// wire [`WORD_SIZE-1:0] forward_a_out;
+	// wire [`WORD_SIZE-1:0] forward_b_out;
+	// wire [`WORD_SIZE-1:0] alu_src_mux_out;
+	// wire [`WORD_SIZE-1:0] alu_result_alu;
+	// wire [`WORD_SIZE-1:0] forwarded_data1_wb;
+
+	// wire [5:0] func_code_ex;
+
+	// wire [15:0] registers_rf [3:0];
+	// wire [`WORD_SIZE-1:0] reg_data1_ex;
+
+	// wire [1:0] in_addr1_ip;
+	// wire [1:0] rd_addr_wb;
+	// wire [`WORD_SIZE-1:0] wb_mux_out;
+	// wire [`WORD_SIZE-1:0] reg_data1_rf;
+
+	wire is_stall;
+	wire [3:0] opcode_ip;
+	wire [3:0] opcode_out_cu;
 	wire [3:0] opcode_ex;
-	wire [5:0] func_code_ex;
+	wire [3:0] opcode_mem;
+	wire [3:0] opcode_wb;
 
-	wire [15:0] registers_rf [3:0];
-	wire [`WORD_SIZE-1:0] reg_data1_ex;
+	wire [15:0] forwarded_a_out;
+	wire [1:0] forward_a;
+	wire [15:0] alu_src_mux_out;
+	wire [15:0] alu_result_alu;
+	wire [15:0] mem_data_wb;
+	wire [15:0] mem_to_reg_out;
+	wire reg_write_wb;
 
-	wire [1:0] in_addr1_ip;
-	wire [1:0] rd_addr_wb;
-	wire [`WORD_SIZE-1:0] wb_mux_out;
-	wire [`WORD_SIZE-1:0] reg_data1_rf;
 
 	// instantiate the unit under test
 	cpu UUT (clk, reset_n, read_m1, address1, data1, read_m2, write_m2, address2, data2, num_inst, output_port, is_halted,
-	
-	
-		     forward_a, forward_b,
-		     forward_a_out, forward_b_out, alu_src_mux_out, alu_result_alu, forwarded_data1_wb,
-			 opcode_ex, func_code_ex,
 
-			 registers_rf, reg_data1_ex,
+			 is_stall, opcode_ip, opcode_out_cu, opcode_ex, opcode_mem, opcode_wb,
 
-			 in_addr1_ip, rd_addr_wb, wb_mux_out, reg_data1_rf
-			
+
+			 		   forwarded_a_out, forward_a,
+		   alu_src_mux_out, alu_result_alu,
+		   mem_data_wb, mem_to_reg_out, reg_write_wb
+
+
+
 	);
 	Memory NUUT(!clk, reset_n, read_m1, address1, data1, read_m2, write_m2, address2, data2);
 

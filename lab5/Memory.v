@@ -77,7 +77,7 @@ module Memory(clk, reset_n, read_m1, address1, data1, read_m2, write_m2, address
 				memory[16'h28] <= 16'hf81c;
 				memory[16'h29] <= 16'h6300;
 				memory[16'h2a] <= 16'hfc1c;
-				memory[16'h2b] <= 16'h4401;
+				memory[16'h2b] <= 16'h4401; // ADI $0, $1, 1
 				memory[16'h2c] <= 16'hf01c;
 				memory[16'h2d] <= 16'h4001;
 				memory[16'h2e] <= 16'hf01c;
@@ -141,13 +141,13 @@ module Memory(clk, reset_n, read_m1, address1, data1, read_m2, write_m2, address
 				memory[16'h68] <= 16'hfc1c;
 				memory[16'h69] <= 16'hf8c7;
 				memory[16'h6a] <= 16'hfc1c;
-				memory[16'h6b] <= 16'h7801;
+				memory[16'h6b] <= 16'h7801; // LWD $0, $2, VAR1
 				memory[16'h6c] <= 16'hf01c;
 				memory[16'h6d] <= 16'h7902;
 				memory[16'h6e] <= 16'hf41c;
 				memory[16'h6f] <= 16'h8901;
 				memory[16'h70] <= 16'h8802;
-				memory[16'h71] <= 16'h7801;
+				memory[16'h71] <= 16'h7801; // LWD $0, $2, VAR1
 				memory[16'h72] <= 16'hf01c;
 				memory[16'h73] <= 16'h7902;
 				memory[16'h74] <= 16'hf41c;
