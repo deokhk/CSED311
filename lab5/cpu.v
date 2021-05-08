@@ -18,15 +18,6 @@ module cpu(clk, reset_n,
 		   read_m2, write_m2, address2, data2, // inout
 		   num_inst, output_port, is_halted,
 
-		   is_stall, opcode_ip, opcode_out_cu,
-		   opcode_ex, opcode_mem, opcode_wb,
-
-		   forward_a_out, forward_a,
-		   alu_src_mux_out, alu_result_alu,
-		   mem_data_wb, mem_to_reg_out, reg_write_wb,
-
-		   j_or_b_pc_candidate_mem, bcond_mem
-
 );
 
 	input clk;
@@ -54,7 +45,7 @@ module cpu(clk, reset_n,
 	wire [`WORD_SIZE-1:0] pc_id;
 	wire [`WORD_SIZE-1:0] inst_id;
 
-    output wire [3:0] opcode_ip;
+    wire [3:0] opcode_ip;
     wire [1:0] in_addr1_ip;
     wire [1:0] in_addr2_ip;
     wire [1:0] write_addr_ip;
@@ -62,7 +53,7 @@ module cpu(clk, reset_n,
     wire [7:0] immediate_and_offset_ip;
     wire [11:0] target_address_ip;
 
-	output wire [3:0] opcode_out_cu;
+	wire [3:0] opcode_out_cu;
 	wire [5:0] func_code_out_cu;
 	wire is_branch_cu;
 	wire is_jmp_jal_cu;
@@ -83,7 +74,7 @@ module cpu(clk, reset_n,
 	wire [`WORD_SIZE-1:0] reg_data2_rf;
 	wire [15:0] registers_rf [3:0]; // For debugging purpose
 
-	output wire [3:0] opcode_ex;
+	wire [3:0] opcode_ex;
 	wire [5:0] func_code_ex;
 	wire [`WORD_SIZE-1:0] pc_ex;
 	wire [1:0] in_addr1_ex;
@@ -102,9 +93,9 @@ module cpu(clk, reset_n,
 	wire reg_write_ex;
 	wire pc_to_reg_ex;
 
-	output wire is_stall;
+	wire is_stall;
 
-    output wire [1:0] forward_a;
+    wire [1:0] forward_a;
     wire [1:0] forward_b;
 
 	wire [`WORD_SIZE-1:0] pc_mem_plus_1_out;
@@ -113,11 +104,11 @@ module cpu(clk, reset_n,
 	wire [`WORD_SIZE-1:0] dist1_forward_out;
 	wire [`WORD_SIZE-1:0] dist2_forward_out;
 
-	output wire [`WORD_SIZE-1:0] forward_a_out;
+	wire [`WORD_SIZE-1:0] forward_a_out;
 	wire [`WORD_SIZE-1:0] forward_b_out;
-	output wire [`WORD_SIZE-1:0] alu_src_mux_out;
+	wire [`WORD_SIZE-1:0] alu_src_mux_out;
 
-	output wire [`WORD_SIZE-1:0] alu_result_alu;
+	wire [`WORD_SIZE-1:0] alu_result_alu;
 	wire bcond_alu;
 
 	wire [1:0] pc_mux_sel;
@@ -126,11 +117,11 @@ module cpu(clk, reset_n,
 	wire [`WORD_SIZE-1:0] pc_plus_offset;
 	wire [`WORD_SIZE-1:0] j_or_b_pc_mux_out;
 
-	output wire [3:0] opcode_mem;
+	wire [3:0] opcode_mem;
 	wire [5:0] func_code_mem;
 	wire [`WORD_SIZE-1:0] pc_mem;
-	output wire [`WORD_SIZE-1:0] j_or_b_pc_candidate_mem;
-	output wire bcond_mem;
+	wire [`WORD_SIZE-1:0] j_or_b_pc_candidate_mem;
+	wire bcond_mem;
 	wire [`WORD_SIZE-1:0] alu_result_mem;
 	wire [`WORD_SIZE-1:0] forwarded_data1_mem;
 	wire [`WORD_SIZE-1:0] forwarded_data2_mem;
@@ -150,24 +141,23 @@ module cpu(clk, reset_n,
 
 	wire is_j_or_b_taken;
 
-	output wire [3:0] opcode_wb;
+	wire [3:0] opcode_wb;
 	wire [5:0] func_code_wb;
 	wire [`WORD_SIZE-1:0] pc_wb;
 	wire [`WORD_SIZE-1:0] alu_result_wb;
-	output wire [`WORD_SIZE-1:0] mem_data_wb;
+	wire [`WORD_SIZE-1:0] mem_data_wb;
 	wire [`WORD_SIZE-1:0] forwarded_data1_wb;
 	wire [1:0] rd_addr_wb;
 	wire mem_to_reg_wb;
-	output wire reg_write_wb;
+	wire reg_write_wb;
 	wire pc_to_reg_wb;
 
-	output wire [`WORD_SIZE-1:0] mem_to_reg_out;
+	wire [`WORD_SIZE-1:0] mem_to_reg_out;
 
 
 	reg [`WORD_SIZE-1:0] pc;
 	reg [`WORD_SIZE-1:0] one;
 
-	// NOTE: is_branch_mem && bcond_mem 이거가 이미 j_or_b_taken 인데?
 	assign no_flush_condition = ((pc_mem + 1) == j_or_b_pc_candidate_mem);
 	// no_flush_condition: 1 -> no flush
 	// no_flush_condition: 0 -> flush
@@ -242,11 +232,10 @@ module cpu(clk, reset_n,
 		.out(wb_mux_out)
 	);
 
-	// TODO: 일단 한 번 다 연결하고, 돌리기 전에 시나리오대로 연결되어있는지 확인.
 	RegisterFile register_file (
 		.clk(clk), .reset_n(reset_n),
 		.in_addr1(in_addr1_ip), .in_addr2(in_addr2_ip), // younger
-		.write_addr(rd_addr_wb), // older // TODO: LWD 일 때는 rt_addr_wb 이 들어가야 하는 거 아님?
+		.write_addr(rd_addr_wb), // older
 		.write_data(wb_mux_out), // older
 		.reg_write_signal(reg_write_wb), // older
 
@@ -296,7 +285,7 @@ module cpu(clk, reset_n,
 	// ALU_OP except JRL: alu_result_mem
 	// JAL, JRL: !!! $2 = PC + 1.
 
-	// TODO: dist 2 에서 오는 건, mem_to_reg mux 의 output 임
+	// dist 2 에서 오는 건, mem_to_reg mux 의 output 임
 	// in2
 	// ADI, ORI, LHI: alu_result_wb
 	// LWD: mem_data_wb
@@ -314,7 +303,6 @@ module cpu(clk, reset_n,
 		.out(dist1_forward_out)
 	);
 	Mux2to1 dist2_forward_mux (
-		// TODO: in0 이거 mem_reg_out 아님?
 		.in0(mem_to_reg_out), .in1(pc_wb_plus_1_out), .sel(is_jal_jrl_wb),
 		.out(dist2_forward_out)
 	);
@@ -489,7 +477,7 @@ module IFIDPipeline(clk, reset_n,
 
 	always @(posedge clk) begin
 		if (control_hazard_flush) begin
-			pc <= 0; // TODO:
+			pc <= 0;
 			inst <= 16'hd000; // NOP op !!
 		end
 		else if (!data_hazard_stall) begin // no control hazard, no data hazard
