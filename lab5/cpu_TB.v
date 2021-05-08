@@ -30,12 +30,28 @@ module cpu_TB();
 	wire [`WORD_SIZE-1:0] alu_result_alu;
 	wire [`WORD_SIZE-1:0] forwarded_data1_wb;
 
+	wire [3:0] opcode_ex;
+	wire [5:0] func_code_ex;
+
+	wire [15:0] registers_rf [3:0];
+	wire [`WORD_SIZE-1:0] reg_data1_ex;
+
+	wire [1:0] in_addr1_ip;
+	wire [1:0] rd_addr_wb;
+	wire [`WORD_SIZE-1:0] wb_mux_out;
+	wire [`WORD_SIZE-1:0] reg_data1_rf;
+
 	// instantiate the unit under test
 	cpu UUT (clk, reset_n, read_m1, address1, data1, read_m2, write_m2, address2, data2, num_inst, output_port, is_halted,
 	
 	
 		     forward_a, forward_b,
-		     forward_a_out, forward_b_out, alu_src_mux_out, alu_result_alu, forwarded_data1_wb
+		     forward_a_out, forward_b_out, alu_src_mux_out, alu_result_alu, forwarded_data1_wb,
+			 opcode_ex, func_code_ex,
+
+			 registers_rf, reg_data1_ex,
+
+			 in_addr1_ip, rd_addr_wb, wb_mux_out, reg_data1_rf
 			
 	);
 	Memory NUUT(!clk, reset_n, read_m1, address1, data1, read_m2, write_m2, address2, data2);

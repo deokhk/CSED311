@@ -20,7 +20,11 @@ module cpu(clk, reset_n,
 
 		   forward_a, forward_b,
 		   forward_a_out, forward_b_out, alu_src_mux_out, alu_result_alu,
-		   forwarded_data1_wb
+		   forwarded_data1_wb, opcode_ex, func_code_ex,
+
+		   registers_rf, reg_data1_ex,
+
+		   in_addr1_ip, rd_addr_wb, wb_mux_out, reg_data1_rf
 	);
 
 	input clk;
@@ -49,7 +53,7 @@ module cpu(clk, reset_n,
 	wire [`WORD_SIZE-1:0] inst_id;
 
     wire [3:0] opcode_ip;
-    wire [1:0] in_addr1_ip;
+    output wire [1:0] in_addr1_ip;
     wire [1:0] in_addr2_ip;
     wire [1:0] write_addr_ip;
     wire [5:0] func_code_ip;
@@ -72,16 +76,17 @@ module cpu(clk, reset_n,
 
 	wire [`WORD_SIZE-1:0] pc_wb_plus_1_out;
 
-	wire [15:0] wb_mux_out;
-	wire [`WORD_SIZE-1:0] reg_data1_rf;
+	output wire [15:0] wb_mux_out;
+	output wire [`WORD_SIZE-1:0] reg_data1_rf;
 	wire [`WORD_SIZE-1:0] reg_data2_rf;
+	output wire [15:0] registers_rf [3:0];
 
-	wire [3:0] opcode_ex;
-	wire [5:0] func_code_ex;
+	output wire [3:0] opcode_ex;
+	output wire [5:0] func_code_ex;
 	wire [`WORD_SIZE-1:0] pc_ex;
 	wire [1:0] in_addr1_ex;
 	wire [1:0] in_addr2_ex;
-	wire [`WORD_SIZE-1:0] reg_data1_ex;
+	output wire [`WORD_SIZE-1:0] reg_data1_ex;
 	wire [`WORD_SIZE-1:0] reg_data2_ex;
 	wire [`WORD_SIZE-1:0] extended_output_ex;
 	wire [1:0] rd_addr_ex;
@@ -111,7 +116,6 @@ module cpu(clk, reset_n,
 	output wire [`WORD_SIZE-1:0] alu_src_mux_out;
 
 	output wire [`WORD_SIZE-1:0] alu_result_alu;
-	wire overflow_flag_alu; 
 	wire bcond_alu;
 
 	wire [1:0] pc_mux_sel;
@@ -147,7 +151,7 @@ module cpu(clk, reset_n,
 	wire [`WORD_SIZE-1:0] alu_result_wb;
 	wire [`WORD_SIZE-1:0] mem_data_wb;
 	output wire [`WORD_SIZE-1:0] forwarded_data1_wb;
-	wire [1:0] rd_addr_wb;
+	output wire [1:0] rd_addr_wb;
 	wire mem_to_reg_wb;
 	wire reg_write_wb;
 	wire pc_to_reg_wb;
@@ -233,7 +237,7 @@ module cpu(clk, reset_n,
 		.write_data(wb_mux_out), // older
 		.reg_write_signal(reg_write_wb), // older
 
-		.reg_data1(reg_data1_rf), .reg_data2(reg_data2_rf)
+		.reg_data1(reg_data1_rf), .reg_data2(reg_data2_rf), .registers(registers_rf)
 	);
 
 	IDEXPipeline ID_EX_pipeline (
@@ -321,7 +325,7 @@ module cpu(clk, reset_n,
 		.alu_input_1(forward_a_out), .alu_input_2(alu_src_mux_out),
 		.opcode(opcode_ex), .func_code(func_code_ex),
 
-        .alu_result(alu_result_alu), .overflow_flag(overflow_flag_alu), .bcond(bcond_alu)
+        .alu_result(alu_result_alu), .bcond(bcond_alu)
 	);
 
 	PcMuxSelector pc_mux_selector (

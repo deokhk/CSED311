@@ -5,7 +5,10 @@ module RegisterFile (clk, reset_n,
 					  in_addr1, in_addr2, write_addr,
 					  write_data, reg_write_signal,
 
-					  reg_data1, reg_data2);
+					  reg_data1, reg_data2,
+                      
+                      registers
+                      );
 
 	input clk, reset_n;
 	input [1:0] in_addr1; // younger
@@ -17,7 +20,7 @@ module RegisterFile (clk, reset_n,
 	output [`WORD_SIZE-1:0] reg_data1;
 	output [`WORD_SIZE-1:0] reg_data2;
 
-    reg [15:0] registers [3:0];
+    output reg [15:0] registers [3:0];
 
 
     initial begin
@@ -28,8 +31,8 @@ module RegisterFile (clk, reset_n,
     end
 
 
-    assign reg_data1 = (in_addr1 == write_addr) ? write_data : registers[in_addr1];
-    assign reg_data2 = (in_addr2 == write_addr) ? write_data : registers[in_addr2];
+    assign reg_data1 = ((in_addr1 == write_addr) && reg_write_signal) ? write_data : registers[in_addr1];
+    assign reg_data2 = ((in_addr2 == write_addr) && reg_write_signal) ? write_data : registers[in_addr2];
 
 
 	always @(posedge reset_n) begin
