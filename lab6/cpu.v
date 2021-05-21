@@ -156,6 +156,7 @@ module cpu(clk, reset_n,
 
 	reg [`WORD_SIZE-1:0] pc;
 	reg [`WORD_SIZE-1:0] one;
+	reg [`WORD_SIZE-1:0] timer;
 
 	assign no_flush_condition = ((pc_mem + 1) == j_or_b_pc_candidate_mem);
 	// no_flush_condition: 1 -> no flush
@@ -408,7 +409,7 @@ module cpu(clk, reset_n,
 	initial begin
 		pc = 0;
 		one = 1;
-
+		timer = 0;
 		output_port = 0;
 		num_inst = 0;
 
@@ -418,6 +419,7 @@ module cpu(clk, reset_n,
 	always @(posedge reset_n) begin
 		pc <= 0;
 		one <= 1;
+		timer <= 0;
 
 		output_port <= 0;
 		num_inst <= 0;
